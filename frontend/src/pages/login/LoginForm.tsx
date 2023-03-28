@@ -1,4 +1,5 @@
 import { useReducer, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { PrimaryButton } from "../../components/Buttons";
 import { ArbitraryInput, TextInput } from "../../components/Inputs";
 import { TextInputObject } from "../../helpers/inputs";
@@ -6,11 +7,12 @@ import { isNotEmpty, validateEmail } from "../../helpers/inputValidators";
 
 function LoginForm(){
     const inputs = useRef([
-        new TextInputObject("Username/Email", "", isNotEmpty("Email harus diisi")),
+        new TextInputObject("Email", "", isNotEmpty("Email harus diisi")),
         new TextInputObject("Password", "", isNotEmpty("Password harus diisi")),
     ]);
-    
     const [isValidating, letValidate] = useState(false);
+    const navigate = useNavigate();
+    
     function onSubmit(e:React.FormEvent<HTMLFormElement>){
         e.preventDefault();
         let hasError:boolean = false;
@@ -20,7 +22,14 @@ function LoginForm(){
             }
         }
         letValidate(true);
+        if (hasError) return;
+
+        const formData = new FormData();
+        formData.append("email", inputs.current[0].value);
+        formData.append("password", inputs.current[1].value);
+        console.log(Array.from(formData.values()));
         
+        navigate("/");
         // TODO: send request to backend
     }
     return <form action='/login' method='post' onSubmit={onSubmit}>

@@ -1,10 +1,30 @@
 import { useParams } from 'react-router-dom';
+import ChatMembers from './ChatMembers';
+import ChatMessages from './ChatMessages';
+
+import "./chat.css";
+import { createContext } from 'react';
+import { Chatroom, UserAccount } from '../../helpers/classes';
+import { ChatroomContext, CurrentUserContext } from './context';
+import { BackButton } from '../../components/Buttons';
 
 function App(){
     const { id } = useParams();
-    return <>
-    <h1>Chat: {id}</h1>
-    </>
+    const currentUser = new UserAccount(9, "davin@email.com", "DavinTristan", "Nama saya Davin", "none");
+    const chatroom = new Chatroom(1, Array.from({length: 10}, (_, i) => i+1).map(x => new UserAccount(x, "davin@email.com", "DavinTristan", "Nama saya Davin", "none")), {
+        title: "Chatroom",
+        thumbnail: "",
+        isToxicityFiltered: true,
+    });
+    return <CurrentUserContext.Provider value={currentUser}>
+        <ChatroomContext.Provider value={chatroom}>
+            <BackButton/>
+            <div className="d-flex justify-content-stretch mt-4 mx-3">
+                <ChatMessages/>
+                <ChatMembers/>
+            </div>
+        </ChatroomContext.Provider>
+    </CurrentUserContext.Provider>
 }
 
 export default App;

@@ -11,7 +11,7 @@ export function useValidateInput<T, ET>(input:InputObject<T>, parser:(raw:React.
     const [error, setError] = useState(shouldValidate ? input.validate() : "");
     const [value, setValue] = useState(input.value);
     function onInput(e: React.ChangeEvent<ET>){
-        input.value = parser(e)
+        input.value = parser(e);
         setValue(input.value);
         if (shouldValidate){
             setError(input.validate());
@@ -61,7 +61,7 @@ export function FileInput({input, className, shouldValidate}:InputProps<FileInpu
                 onChange={onInput}
                 accept={input.options.accept}
             />
-            {input.label}
+            {value ? value.name : input.label}
         </label>
         {error.length > 0 && <p className="fw-medium text-danger">{ error }</p>}
     </div>

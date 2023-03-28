@@ -1,0 +1,44 @@
+.h-screen {
+    height: 85vh;
+}
+.chat-member-list {
+    border-radius: 10px 40px 40px 10px;
+}
+.chat-member-list button {
+    border-radius: 10px 10px 40px 10px;
+    width: 100%;
+    height: 60px;
+}
+.chat-messages-list {
+    border-radius: 40px 10px 10px 40px;
+}
+.member-info {
+    padding-left: calc(2rem + 48px);
+}
+.member-list-item {
+    cursor: pointer;
+}
+.member-list-item:hover>div {
+    background-color: var(--highlight-dark);
+}
+.icon-circle {
+    border-radius: 50%;
+    border: 4px solid black;
+    width: 48px;
+    height: 48px;
+}
+.chat-message {
+    border-radius: 20px 20px 70px 20px;
+    word-wrap: break-word;
+    width: 95%;
+    transition: transform 0.2s ease, border-radius 0.2s ease;
+}
+.chat-message:hover {
+    border-radius: 20px 20px 20px 20px;
+    transform: translateX(1%);
+}
+.chat-input {
+    min-height: 40px;
+    border-radius: 10px 10px 10px 40px;
+    padding-left: 40px;
+}
