@@ -37,16 +37,16 @@ export function MemberIcon({user}:RequireUser){
     return <MaybeImage className="icon-circle" src={user.pfp} alt={user.username}/>
 }
 
-function ChatMembers(){
+interface ChatMembersProps {
+    onOpenSettings:()=>void
+}
+function ChatMembers({onOpenSettings}:ChatMembersProps){
     const chatroom = useContext(ChatroomContext);
-    function editChatSettings(){
-        // TODO: chat settings
-    }
     return <div className="col-3 chat-member-list bg-white px-4 pt-4 pb-2">
-        <div className="overflow-y-scroll h-screen">
+        <div className="overflow-y-scroll h-screen mb-5">
             { chatroom!.members.map(x => <MemberListItem key={x.id} user={x}/>) }
         </div>
-        <PrimaryButton onClick={editChatSettings}>
+        <PrimaryButton onClick={onOpenSettings}>
             Pengaturan Chatroom
         </PrimaryButton>
     </div>

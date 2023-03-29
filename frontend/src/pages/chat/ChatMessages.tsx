@@ -1,7 +1,7 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import { Message, UserAccount } from "../../helpers/classes";
 import { MemberIcon } from "./ChatMembers";
-import { CurrentUserContext } from "./context";
+import { ChatroomContext, CurrentUserContext } from "./context";
 
 interface RequireMessage {
     message:Message
@@ -42,19 +42,29 @@ function ChatInput({addMessage}:ChatInputProps){
 }
 
 function ChatMessages(){
-    const [messages, setMessages] = useState(Array.from({length: 20}, (_, i) => i+1).map(x => new Message(x, new UserAccount(x, "davin@email.com", "DavinTristan", "Nama saya Davin", "none"), "Hallo", new Date())));
+    function createPlaceholders(start:number = 0){
+        return Array.from({length: 20}, (_, i) => i+1).map(x => new Message(x+start, new UserAccount(x+start, "davin@email.com", "DavinTristan", "Nama saya Davin", "none"), "Hallo", new Date()));
+    }
+    const [messages, setMessages] = useState(createPlaceholders());
     const [hasNewMessage, letNewMessage] = useState(false);
     const scrollContainer = useRef<HTMLDivElement>(null);
+    const chatroom = useContext(ChatroomContext);
+    function reduceMessages(){
+        if (messages.length > 200){
+            setMessages(msg => msg.slice(msg.length-200));
+        }
+    }
     function addMessage(newMsg:Message){
         setMessages(msg => [...msg, newMsg]);
+        reduceMessages();
         letNewMessage(true);
     }
     useEffect(()=>{
         if (!scrollContainer.current) return;
         scrollContainer.current.scrollTop = scrollContainer.current.scrollHeight;
-    });
+    }, []);
     return <div className="col-9 chat-messages-list bg-white me-2 p-3 position-relative">
-        <h2></h2>
+        <h2 className="text-center">{chatroom?.settings.title}</h2>
         <div className="overflow-y-scroll h-screen mb-2" ref={scrollContainer}>
             { messages.map(msg => <ChatMessage message={msg} key={msg.id}/>)}
         </div>

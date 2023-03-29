@@ -13,10 +13,17 @@ export function validateName(name:string){
     if (name.length < 5) return "Nama harus terdiri dari minimal 5 karakter";
     else if (!name.match(NAME_REGEX)) return "Nama hanya boleh terdiri dari huruf alfabet dan angka 0-9 saja";
 }
+export function validateChatroomTitle(title:string){
+    if (title.length < 5) return "Judul chatroom harus terdiri dari minimal 5 karakter";
+    else if (!title.match(NAME_REGEX)) return "Judul chatroom hanya boleh terdiri dari huruf alfabet dan angka 0-9 saja";
+}
 export function validatePhoneNumber(phone:string){
     if (phone.length == 0) return "No. telp harus diisi";
     else if (!phone.match(PHONE_REGEX))  return "No. telp harus terdiri dari 10-12 angka";
 }
 export function isNotEmpty(errorMessage:string){
     return (value:string) => value.length > 0 ? "" : errorMessage;
+}
+export function noValidate(){
+    return "";
 }

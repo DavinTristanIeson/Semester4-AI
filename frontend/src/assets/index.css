@@ -76,6 +76,9 @@ input:not([type=submit], [type=checkbox], [type=radio], [type=file]):focus, text
 .very-rounded {
   border-radius: 40px;
 }
+.bg-secondary {
+  background-color: var(--bg-secondary) !important;
+}
 .bg-highlight {
   background-color: var(--highlight);
 }
@@ -144,4 +147,7 @@ input:not([type=submit], [type=checkbox], [type=radio], [type=file]):focus, text
 }
 .back-button:hover div {
   background-color: var(--primary-highlight);
+}
+.thick-shadow {
+  box-shadow: 6px 6px 0px 4px rgba(0, 0, 0, 0.4);
 }

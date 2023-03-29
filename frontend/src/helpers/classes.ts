@@ -32,7 +32,9 @@ export class Message {
 export interface ChatroomSettings {
     title:string;
     thumbnail:string;
+    description:string;
     isToxicityFiltered:boolean;
+    isPublic:boolean;
 }
 export class Chatroom {
     readonly id:number;

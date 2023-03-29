@@ -68,10 +68,10 @@ export class FileInputObject extends InputObject<File|undefined> {
     type:string = "file"
     options:FileInputObjectOptions
     validate: () => string;
-    constructor(label:string, validator: (file?:File) => string, options:Partial<FileInputObjectOptions>){
+    constructor(label:string, validator: (file?:File) => string, options?:Partial<FileInputObjectOptions>){
         super(label, undefined);
         this.options = {
-            accept: options.accept ?? "*",
+            accept: options?.accept ?? "*",
         }
         this.validate = ()=>validator(this.value);
     }

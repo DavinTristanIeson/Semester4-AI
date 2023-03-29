@@ -42,3 +42,23 @@
     border-radius: 10px 10px 10px 40px;
     padding-left: 40px;
 }
+.chat-options {
+    width: 80%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+.chat-options>div:nth-child(2){
+    background-color: var(--grey);
+    border-radius: 10px 10px 40px 40px;
+}
+.chat-options>div:nth-child(2)>button:nth-child(1) {
+    border-radius: 10px 10px 40px 10px;
+}
+@media screen and (min-width: 996px){
+    .chat-options>div:nth-child(1) {
+        display: grid;
+        grid-template-columns: 40% 60%;
+    }
+}
