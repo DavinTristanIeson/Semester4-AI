@@ -1,12 +1,14 @@
 import { useContext, useState } from "react";
 import { CurrentUserContext, PublicChatroomsContext } from "../../context";
 import { Chatroom, ChatroomInfo, UserAccount } from "../../helpers/classes";
-import { ChatroomItem, ChatroomJoinDetail, ChatroomListItem } from "./ChatroomItem";
+import { ChatroomItem, ChatroomJoinDetail, ChatroomListItem, CreateNewChatroom } from "./ChatroomItem";
 import { KeyboardEvent, FocusEvent } from "react";
 import "./home.css";
 import { MaybeImage } from "../../components/Image";
-import { DangerButton } from "../../components/Buttons";
+import { DangerButton, PrimaryButton } from "../../components/Buttons";
 import { useNavigate } from "react-router-dom";
+
+import Add from "../../assets/add.svg";
 
 function SearchView({searchTerm}:{searchTerm:string}){
     const [viewedChatroom, setViewedChatroom] = useState<ChatroomInfo|null>(null);
@@ -26,20 +28,34 @@ function SearchView({searchTerm}:{searchTerm:string}){
     </>
 }
 
+function NewChatroomButton({onClick}:{onClick:(e:React.MouseEvent<HTMLButtonElement>)=>void}){
+    return <PrimaryButton className="h-auto px-5" onClick={onClick}>
+        <img src={Add} alt="Add New Chatroom"/>
+    </PrimaryButton>
+}
+
 function MainView(){
     const chatrooms = useContext(PublicChatroomsContext);
-    const [viewedChatroom, setViewedChatroom] = useState<ChatroomInfo|null>(null);
+    const [viewedChatroom, setViewedChatroom] = useState<{
+        room: ChatroomInfo|null,
+        isNew:boolean,
+    }|null>(null);
     
     return <>
-        {viewedChatroom && <ChatroomJoinDetail onClose={() => setViewedChatroom(null)} chatroom={viewedChatroom}/>}
+        {viewedChatroom && (
+            viewedChatroom.isNew ?
+            <CreateNewChatroom onClose={()=>setViewedChatroom(null)}/> :  
+            <ChatroomJoinDetail onClose={() => setViewedChatroom(null)} chatroom={viewedChatroom.room!}/>
+        )}
         <h2>Ruangan Saya</h2>
         <div className="horizontal-scroll">
-            {chatrooms?.mine.map(x => <ChatroomItem chatroom={x} key={x.id} onOpen={setViewedChatroom}/>)}
+            <NewChatroomButton onClick={()=>setViewedChatroom({room: null, isNew: true})}/>
+            {chatrooms?.mine.map(x => <ChatroomItem chatroom={x} key={x.id} onOpen={e => setViewedChatroom({room: e, isNew: false})}/>)}
         </div>
         <hr className="my-5"/>
         <h2>Ruangan Publik</h2>
         <div className="horizontal-scroll">
-            {chatrooms?.public.map(x => <ChatroomItem chatroom={x} key={x.id} onOpen={setViewedChatroom}/>)}
+            {chatrooms?.public.map(x => <ChatroomItem chatroom={x} key={x.id} onOpen={e => setViewedChatroom({room: e, isNew: false})}/>)}
         </div>
     </>
 }

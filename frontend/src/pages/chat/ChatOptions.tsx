@@ -10,6 +10,7 @@ import { useNavigate } from "react-router-dom";
 interface ChatOptionsProps {
     onClose: ()=>void
 }
+
 function ChatOptions({onClose}:ChatOptionsProps){
     const chatroom = useContext(ChatroomContext)!;
     const navigate = useNavigate();

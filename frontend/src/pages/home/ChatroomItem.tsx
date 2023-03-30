@@ -1,9 +1,12 @@
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { DangerButton, PrimaryButton } from "../../components/Buttons";
 import { MaybeImage } from "../../components/Image";
+import { ArbitraryInput } from "../../components/Inputs";
 import { CurrentUserContext, PublicChatroomsContext } from "../../context";
 import { ChatroomInfo } from "../../helpers/classes";
+import { CheckboxInputObject, FileInputObject, TextInputObject } from "../../helpers/inputs";
+import { noValidate, validateChatroomTitle } from "../../helpers/inputValidators";
 
 interface ChatroomItemProps {
     chatroom:ChatroomInfo,
@@ -76,6 +79,56 @@ export function ChatroomJoinDetail({chatroom, onClose}:ChatroomItemProps & Close
             <PrimaryButton onClick={joinChatroom} className="w-25">Masuk</PrimaryButton>
             { chatroom.hasJoined && chatroom.owner.id != currentUser?.id && <DangerButton onClick={leaveChatroom} className="w-25">Keluar</DangerButton> }
             <button className="btn btn-secondary m-2 p-2 w-25" onClick={onClose}>Batal</button>
+        </div>
+    </div>
+}
+
+export function CreateNewChatroom({onClose}:CloseChatroomDetail){
+    const [isValidating, letValidating] = useState(false);
+    const navigate = useNavigate();
+    const inputs = [
+        new TextInputObject("Judul Chatroom", "", validateChatroomTitle),
+        new TextInputObject("Deskripsi Chatroom", "", noValidate, {
+            isTextarea: true,
+        }),
+        new FileInputObject("Thumbnail Chatroom", x => x ? "" : "Harus ada thumbnail untuk chatroom", {
+            accept: "image/*"
+        }),
+        new CheckboxInputObject("Pengaturan", [], [
+            {label: "Hapus Pesan Toksik", value:"filtered"},
+            {label: "Chatroom Publik", value:"public"}
+        ], noValidate)
+    ];
+    function createNewChatroom(){
+        let hasError = false;
+        const responses:{[key:string]:string|File|string[]|undefined} = {};
+        for (let input of inputs){
+            if (input.validate())
+                hasError = true;
+            responses[input.label] = input.value;
+        }
+        letValidating(true);
+        if (hasError) return;
+        
+        console.log(responses);
+        // TODO: send new chatroom to backend
+        navigate("/chat/1");
+    }
+
+    return <div className="very-rounded chat-options thick-shadow bg-white">
+        <div className="p-4">
+            <div>
+                {inputs.map(x => <ArbitraryInput input={x} shouldValidate={isValidating} key={x.id}/>)}
+            </div>
+        </div>
+        <div className="p-1 d-flex flex-row-reverse">
+            <PrimaryButton onClick={createNewChatroom} className="w-25">
+                Buat Chatroom Baru
+            </PrimaryButton>
+            <button className="btn btn-secondary m-2 p-2 w-25"
+            onClick={onClose}>
+                Batal
+            </button>
         </div>
     </div>
 }
