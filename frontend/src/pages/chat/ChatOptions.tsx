@@ -1,16 +1,18 @@
 import { useContext } from "react";
-import { PrimaryButton } from "../../components/Buttons";
+import { DangerButton, PrimaryButton } from "../../components/Buttons";
 import { MaybeImage } from "../../components/Image";
 import { ArbitraryInput } from "../../components/Inputs";
 import { CheckboxInputObject, FileInputObject, TextInputObject } from "../../helpers/inputs";
 import { noValidate, validateChatroomTitle } from "../../helpers/inputValidators";
-import { ChatroomContext } from "./context";
+import { ChatroomContext } from "../../context";
+import { useNavigate } from "react-router-dom";
 
 interface ChatOptionsProps {
     onClose: ()=>void
 }
 function ChatOptions({onClose}:ChatOptionsProps){
     const chatroom = useContext(ChatroomContext)!;
+    const navigate = useNavigate();
 
     const chatroomOptions = [];
     if (chatroom.settings.isToxicityFiltered)
@@ -47,6 +49,11 @@ function ChatOptions({onClose}:ChatOptionsProps){
         // TODO: Save to backend
         onClose();
     }
+    function deleteChatroom(){
+        if (!confirm("Apakah anda yakin anda mau menghapus chatroom ini?")) return;
+        navigate("/", {replace: true});
+        // TODO: send request ke backend
+    }
 
     return <div className="very-rounded chat-options thick-shadow bg-white">
         <div className="p-4">
@@ -59,6 +66,9 @@ function ChatOptions({onClose}:ChatOptionsProps){
             <PrimaryButton onClick={saveSettings} className="w-25">
                 Simpan
             </PrimaryButton>
+            <DangerButton onClick={deleteChatroom} className="w-25">
+                Delete Chatroom Ini
+            </DangerButton>
             <button className="btn btn-secondary m-2 p-2 w-25"
             onClick={onClose}>
                 Batal

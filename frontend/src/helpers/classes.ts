@@ -29,6 +29,7 @@ export class Message {
     }
 }
 
+
 export interface ChatroomSettings {
     title:string;
     thumbnail:string;
@@ -36,12 +37,30 @@ export interface ChatroomSettings {
     isToxicityFiltered:boolean;
     isPublic:boolean;
 }
+export class ChatroomInfo {
+    // Untuk ditampilkan di halaman /home
+    readonly id:number;
+    owner:UserAccount;
+    memberCount:number;
+    hasJoined:boolean;
+    settings:ChatroomSettings
+    constructor(id:number, owner:UserAccount, memberCount:number, hasJoined:boolean, settings:ChatroomSettings){
+        this.id = id;
+        this.owner = owner;
+        this.memberCount = memberCount;
+        this.hasJoined = hasJoined;
+        this.settings = settings;
+    }
+}
+
 export class Chatroom {
     readonly id:number;
+    readonly ownerID:number;
     members:UserAccount[];
     settings:ChatroomSettings;
-    constructor(id:number, members:UserAccount[], settings:ChatroomSettings){
+    constructor(id:number, ownerID:number, members:UserAccount[], settings:ChatroomSettings){
         this.id = id;
+        this.ownerID = ownerID;
         this.members = members;
         this.settings = settings;
     }

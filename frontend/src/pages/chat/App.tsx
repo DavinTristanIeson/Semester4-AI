@@ -5,14 +5,14 @@ import ChatMessages from './ChatMessages';
 import "./chat.css";
 import { createContext, CSSProperties, useState } from 'react';
 import { Chatroom, UserAccount } from '../../helpers/classes';
-import { ChatroomContext, CurrentUserContext } from './context';
+import { ChatroomContext, CurrentUserContext } from '../../context';
 import { BackButton } from '../../components/Buttons';
 import ChatOptions from './ChatOptions';
 
 function App(){
     const { id } = useParams();
     const currentUser = new UserAccount(9, "davin@email.com", "DavinTristan", "Nama saya Davin", "none");
-    const chatroom = new Chatroom(1, Array.from({length: 10}, (_, i) => i+1).map(x => new UserAccount(x, "davin@email.com", "DavinTristan", "Nama saya Davin", "none")), {
+    const chatroom = new Chatroom(1, 9, Array.from({length: 10}, (_, i) => i+1).map(x => new UserAccount(x, "davin@email.com", "DavinTristan", "Nama saya Davin", "none")), {
         title: "Chatroom",
         thumbnail: "",
         description: "Hallo",

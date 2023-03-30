@@ -7,7 +7,7 @@ import { isNotEmpty, validateEmail, validateName, validatePassword } from "../..
 interface RegisterFormInputLabels {
     "Email":string,
     "Password":string,
-    "Username":string,
+    "Nama":string,
     "Tentang Anda":string,
     "Foto Profil":File
 }
@@ -16,7 +16,7 @@ function RegisterForm(){
     const inputs = useRef([
         new TextInputObject("Email", "", validateEmail),
         new TextInputObject("Password", "", validatePassword),
-        new TextInputObject("Username", "", validateName),
+        new TextInputObject("Nama", "", validateName),
         new TextInputObject("Tentang Anda", "", (value)=>"", {isTextarea: true}),
         new FileInputObject("Foto Profil", (file)=>(file ? "" : "Foto profil anda diperlukan"), {
             accept: "image/*"
@@ -29,7 +29,7 @@ function RegisterForm(){
         const formData = new FormData();
         formData.append("email", responses["Email"]);
         formData.append("password", responses["Password"]);
-        formData.append("username", responses["Username"]);
+        formData.append("name", responses["Nama"]);
         formData.append("bio", responses["Tentang Anda"]);
         formData.append("pfp", responses["Foto Profil"]);
         return formData;
@@ -52,7 +52,7 @@ function RegisterForm(){
         console.log(Array.from(formData.values()));
 
         // TODO: send request to backend
-        navigate("/");
+        navigate("/", {replace:true});
     }
     return <form action='/register' method='post' onSubmit={onSubmit}>
         {/* https://stackoverflow.com/questions/69510795/component-doesnt-update-on-props-change

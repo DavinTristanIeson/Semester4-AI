@@ -2,7 +2,7 @@ import { useContext, useState } from "react";
 import { PrimaryButton } from "../../components/Buttons";
 import { MaybeImage } from "../../components/Image";
 import { UserAccount } from "../../helpers/classes"
-import { ChatroomContext, CurrentUserContext } from "./context";
+import { ChatroomContext, CurrentUserContext } from "../../context";
 
 interface RequireUser {
     user: UserAccount
@@ -42,13 +42,16 @@ interface ChatMembersProps {
 }
 function ChatMembers({onOpenSettings}:ChatMembersProps){
     const chatroom = useContext(ChatroomContext);
+    const user = useContext(CurrentUserContext);
     return <div className="col-3 chat-member-list bg-white px-4 pt-4 pb-2">
         <div className="overflow-y-scroll h-screen mb-5">
             { chatroom!.members.map(x => <MemberListItem key={x.id} user={x}/>) }
         </div>
-        <PrimaryButton onClick={onOpenSettings}>
-            Pengaturan Chatroom
-        </PrimaryButton>
+        {
+            chatroom && user && chatroom.ownerID == user.id && <PrimaryButton onClick={onOpenSettings}>
+                Pengaturan Chatroom
+            </PrimaryButton>
+        }
     </div>
 }
 

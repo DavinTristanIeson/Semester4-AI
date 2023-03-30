@@ -1,7 +1,7 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import { Message, UserAccount } from "../../helpers/classes";
 import { MemberIcon } from "./ChatMembers";
-import { ChatroomContext, CurrentUserContext } from "./context";
+import { ChatroomContext, CurrentUserContext } from "../../context";
 
 interface RequireMessage {
     message:Message

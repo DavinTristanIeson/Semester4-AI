@@ -4,6 +4,7 @@
   --primary: #F4B331;
   --primary-highlight: #fcc65a;
   --secondary: #EFD8AA;
+  --secondary-highlight: #f1e3c6;
   --secondary-dark: #ccae71;
   --dark: #755004;
   --highlight: #80BCF4;
@@ -105,7 +106,7 @@ input:not([type=submit], [type=checkbox], [type=radio], [type=file]):focus, text
 }
 /* Track */
 ::-webkit-scrollbar-track {
-  background: var(--grey);
+  background: rgba(0, 0, 0, 0.1);
   border-radius: 10px;
   border: solid 3px transparent;
 }
@@ -149,5 +150,5 @@ input:not([type=submit], [type=checkbox], [type=radio], [type=file]):focus, text
   background-color: var(--primary-highlight);
 }
 .thick-shadow {
-  box-shadow: 6px 6px 0px 4px rgba(0, 0, 0, 0.4);
+  box-shadow: 6px 6px 0px 2px rgba(0, 0, 0, 0.4);
 }

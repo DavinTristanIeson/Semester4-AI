@@ -29,7 +29,7 @@ function LoginForm(){
         formData.append("password", inputs.current[1].value);
         console.log(Array.from(formData.values()));
         
-        navigate("/");
+        navigate("/", {replace:true});
         // TODO: send request to backend
     }
     return <form action='/login' method='post' onSubmit={onSubmit}>
