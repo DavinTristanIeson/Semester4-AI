@@ -20,9 +20,6 @@ function App(){
         isPublic: false,
     });
     const [isOptionsOpen, letOptionsOpen] = useState(false);
-    function onClose(){
-        letOptionsOpen(false);
-    }
     return <CurrentUserContext.Provider value={currentUser}>
         <ChatroomContext.Provider value={chatroom}>
             <BackButton/>
