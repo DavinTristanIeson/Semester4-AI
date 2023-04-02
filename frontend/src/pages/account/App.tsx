@@ -41,44 +41,7 @@ const App: React.FC = () => {
     //     return <div>Loading...</div>;
     // }
 
-    const [editNameOpen, setEditNameOpen] = useState(false);
-    const [editEmailOpen, setEditEmailOpen] = useState(false);
-    const [editBioOpen, setEditBioOpen] = useState(false);
-    const [newName, setNewName] = useState(user.name);
-    const [newEmail, setNewEmail] = useState(user.email);
-    const [newBio, setNewBio] = useState(user.bio);
     const [roomColors, setRoomColors] = useState<string[]>([]);
-
-
-    const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setNewName(event.target.value);
-    };
-
-    const handleEmailChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setNewEmail(event.target.value);
-    };
-
-    const handleBioChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setNewBio(event.target.value);
-    };
-
-    const handleNameSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-        user.name = newName;
-        setEditNameOpen(false);
-    };
-
-    const handleEmailSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-        user.email = newEmail;
-        setEditEmailOpen(false);
-    };
-
-    const handleBioSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-        user.bio = newBio;
-        setEditBioOpen(false);
-    };
 
     useEffect(() => {
         const colors = user.rooms.map(() => `#${Math.floor(Math.random() * 16777215).toString(16)}`);
@@ -97,39 +60,9 @@ const App: React.FC = () => {
             </div>
             <div className="description">
                 <div className="useProfile">
-                    <h1>
-                        <button className="editButton" onClick={() => setEditNameOpen(!editNameOpen)}></button>
-                        {user.name}
-                    </h1>
-                    {editNameOpen && (
-                        <form onSubmit={handleNameSubmit}>
-                            <input type="text" value={newName} onChange={handleNameChange} className="form-input" />
-                            <button className="save-btn" type="submit">Save</button>
-                            <button className="cancel-btn" onClick={() => setEditNameOpen(false)}>Cancel</button>
-                        </form>
-                    )}
-                    <h3>
-                        <button className="editButton" onClick={() => setEditEmailOpen(!editEmailOpen)}></button>
-                        {user.email}
-                    </h3>
-                    {editEmailOpen && (
-                        <form onSubmit={handleEmailSubmit}>
-                            <input type="text" value={newEmail} onChange={handleEmailChange} className="form-input" />
-                            <button className="save-btn" type="submit">Save</button>
-                            <button className="cancel-btn" onClick={() => setEditEmailOpen(false)}>Cancel</button>
-                        </form>
-                    )}
-                    <p>
-                        <button className="editButton" onClick={() => setEditBioOpen(!editBioOpen)}></button>
-                        {user.bio}
-                    </p>
-                    {editBioOpen && (
-                        <form onSubmit={handleBioSubmit}>
-                            <input type="text" value={newBio} onChange={handleBioChange} className="form-input" />
-                            <button className="save-btn" type="submit">Save</button>
-                            <button className="cancel-btn" onClick={() => setEditBioOpen(false)}>Cancel</button>
-                        </form>
-                    )}
+                    <h1>{user.name}</h1>
+                    <h3>{user.email}</h3>
+                    <p>{user.bio}</p>
                 </div>
                 <div className="info">
                     <div className="title">
