@@ -6,16 +6,16 @@ interface Props {
   color: string;
 }
 
-const InfoRuangan: React.FC<Props> = ({ name, color }) => {
+const RoomInfo: React.FC<Props> = ({ name, color }) => {
   const style = {
     backgroundColor: color,
   };
 
   return (
-    <div className="infoRuang" style={style}>
+    <div className="roomInfo" style={style}>
       <h4>{name}</h4>
     </div>
   );
 };
 
-export default InfoRuangan;
+export default RoomInfo;

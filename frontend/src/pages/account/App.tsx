@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import InfoRuangan from './InfoRuangan';
+import RoomInfo from './RoomInfo';
 import backgroundImage from './images/background.jpg';
 import profilePicture from './images/profile.png';
 import './account.css';
@@ -132,18 +132,18 @@ const App: React.FC = () => {
                     )}
                 </div>
                 <div className="info">
-                    <div className="judul">
+                    <div className="title">
                         <h3>Ruangan Saya</h3>
                     </div>
-                    <div className="itemRuangan">
+                    <div className="roomItem">
                         {user.rooms.map((room, index) => (
-                            <InfoRuangan key={room.id} name={room.name} color={roomColors[index]} />
+                            <RoomInfo key={room.id} name={room.name} color={roomColors[index]} />
                         ))}
                     </div>
                 </div>
             </div>
             <div className="button">
-                <button>Hapus Akun</button>
+                <button>Delete Account</button>
             </div>
         </>
     );

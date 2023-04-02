@@ -61,19 +61,19 @@
   width: 40%;
 }
 
-.info .judul {
+.info .title {
   display: flex;
   justify-content: center;
   margin-bottom: 20px;
 }
 
-.info .itemRuangan {
+.info .roomItem {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-evenly;
 }
 
-.infoRuang {
+.roomInfo {
   width: 250px;
   padding: 15px;
   text-align: center;
