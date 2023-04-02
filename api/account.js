@@ -1,14 +1,17 @@
 const express = require("express");
 const router = express.Router();
-const { auth } = require("./middleware.js");
+const { auth, createUserObject } = require("./middleware.js");
 const bcrypt = require("bcrypt");
 const db = require("./db.js");
+const fs = require("fs/promises");
+
+const upload = require('./pfp.js');
 
 function validateRegister(req, res, next) {
-  const { email, password, name, bio, pfp } = req.body;
-  if (!email || !password || !name || !pfp ) {
+  const { email, password, name, bio } = req.body;
+  if (!email || !password || !name || !bio ) {
     res.status(400).json({
-      message: "Expecting the following fields: email, password, name , bio, Profile Picture",
+      message: "Expecting the following fields: email, password, name, and bio",
     });
     return;
   }
@@ -37,13 +40,19 @@ function validateRegister(req, res, next) {
     next();
   }
 }
-router.post("/register", validateRegister, async (req, res, next) => {
-  const { email, password, username, bio, pfp} = req.body;
+
+router.post("/register", validateRegister, upload.single("pfp"), async (req, res, next) => {
+  const { email, password, name, bio } = req.body;
+  const { pfp } = req.files;
+  if (!pfp || pfp.length == 0){
+    res.status(400).json({message: "Sebuah gambar sebagai pfp pengguna harus disediakan!"});
+    return;
+  }
 	try {
 		const saltRounds = 10;
 		const hash = await bcrypt.hash(password, saltRounds);
     //ni gambar masukkin ke server n ambil locationnya saya belum paham (pfp)
-		await db.run("INSERT INTO users VALUES (NULL, ?, ?, ?, ?, ?,'[]' )", [email, hash, username, bio,pfp]);
+		await db.run("INSERT INTO users VALUES (NULL, ?, ?, ?, ?, ?)", [email, hash, name, bio, pfp[0].filename]);
 	} catch (err) {
 		res.status(400).json({message: "Email tersebut sudah digunakan orang lain."});
 		return;
@@ -53,7 +62,7 @@ router.post("/register", validateRegister, async (req, res, next) => {
 		const user = await db.get("SELECT * FROM users WHERE email = ?", [email]);
 		if (!user) res.status(500).end();
 		else {
-			req.session.user = {id: user.id, email: user.email, bio: user.bio, pfp:user.pfp_path};
+			req.session.user = {id: user.id};
 			res.status(201).json(createUserObject(user));
 		}
 	} catch (err){
@@ -69,9 +78,8 @@ router.post("/login", async (req, res, next) => {
 			res.status(401).json({ message: "Email atau password salah!"});
 			return;
 		}
-		req.session.user = {id: user.id, email: user.email, bio: user.bio, pfp:user.pfp_path,joined_room:user.joined_room};
+		req.session.user = {id: user.id};
 		res.status(200).json(createUserObject(user));
-    res.redirect('/')
 	} catch (err) {
 		next(err);
 	}
@@ -82,17 +90,42 @@ router.post("/logout", auth, (req, res) => {
   res.status(200).end();
 });
 
-router.get("/me", (req, res) => {
+router.get("/me", auth, (req, res) => {
   if (req.session.user) res.status(200).json(req.session.user);
   else res.status(401).end();
 });
 
-router.get("/accounts", (req, res) => {
-  if (req.session.user){
-    const {id,email,pfp,bio,joined_room} = req.session.user
-		res.send([id,email,pfp,bio,joined_room])
+router.get("/", auth, async (req, res) => {
+  try {
+    const user = await db.get("SELECT * FROM users WHERE id = ?", [req.session.user.id]);
+    if (!user) res.status(404).end();
+    else res.status(200).json(createUserObject(user));
+  } catch (err){
+    next(err);
   }
-  else res.status(401).end();
+});
+
+router.delete("/", auth, async (req, res) => {
+  try {
+    const user = await db.get("SELECT * FROM users WHERE id = ?", [req.session.user.id]);
+    if (!user){
+      res.status(404).end();
+      return;
+    }
+    const oldFilePath = path.join(__dirname, "../storage", user.pfp_path);
+    if (
+      await fs
+        .access(oldFilePath)
+        .then(() => true)
+        .catch(() => false)
+      ){
+      await fs.unlink(oldFilePath);
+    }
+    req.session.destroy();
+    res.status(200).end();
+  } catch (err){
+    next(err);
+  }
 });
 
 module.exports = router

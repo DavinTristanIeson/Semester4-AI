@@ -55,12 +55,12 @@ export class ChatroomInfo {
 
 export class Chatroom {
     readonly id:number;
-    readonly ownerID:number;
+    readonly owner:UserAccount;
     members:UserAccount[];
     settings:ChatroomSettings;
-    constructor(id:number, ownerID:number, members:UserAccount[], settings:ChatroomSettings){
+    constructor(id:number, owner:UserAccount, members:UserAccount[], settings:ChatroomSettings){
         this.id = id;
-        this.ownerID = ownerID;
+        this.owner = owner;
         this.members = members;
         this.settings = settings;
     }
