@@ -33,7 +33,7 @@ export function ChatroomListItem({chatroom, onOpen}:ChatroomItemProps & OpenChat
         <MaybeImage src={chatroom.settings.thumbnail} alt={chatroom.settings.title} className="rounded"/>
         <div className="ms-4 mt-3">
             <h4 className="m-0 p-0">{chatroom.settings.title}</h4>
-            <p className="fw-light">dimiliki oleh {chatroom.owner.username}</p>
+            <p className="fw-light">owned by {chatroom.owner.username}</p>
             <p>{chatroom.settings.description}</p>
         </div>
     </div>
@@ -59,13 +59,13 @@ export function ChatroomJoinDetail({chatroom, onClose}:ChatroomItemProps & Close
             <MaybeImage src={chatroom.settings.thumbnail} alt={chatroom.settings.title}/>
             <div>
                 <h2 className="m-0 p-0">{chatroom.settings.title}</h2>
-                <p className="fw-light">dimiliki oleh {chatroom.owner.username}</p>
+                <p className="fw-light">owned by {chatroom.owner.username}</p>
                 <p className="border-start ps-4">{chatroom.settings.description}</p>
                 <div className="form-check">
                     <label
                         className="form-check-label"
                         htmlFor="chatroom-join-detail-is-filtered-checkbox"
-                    >Hapus Pesan Toksik</label>
+                    >Delete Toxic Messages</label>
                     <input
                         className = "form-check-input"
                         disabled
@@ -76,9 +76,9 @@ export function ChatroomJoinDetail({chatroom, onClose}:ChatroomItemProps & Close
             </div>
         </div>
         <div className="p-1 d-flex flex-row-reverse">
-            <PrimaryButton onClick={joinChatroom} className="w-25">Masuk</PrimaryButton>
-            { chatroom.hasJoined && chatroom.owner.id != currentUser?.id && <DangerButton onClick={leaveChatroom} className="w-25">Keluar</DangerButton> }
-            <button className="btn btn-secondary m-2 p-2 w-25" onClick={onClose}>Batal</button>
+            <PrimaryButton onClick={joinChatroom} className="w-25">Join</PrimaryButton>
+            { chatroom.hasJoined && chatroom.owner.id != currentUser?.id && <DangerButton onClick={leaveChatroom} className="w-25">Leave</DangerButton> }
+            <button className="btn btn-secondary m-2 p-2 w-25" onClick={onClose}>Cancel</button>
         </div>
     </div>
 }
@@ -87,16 +87,16 @@ export function CreateNewChatroom({onClose}:CloseChatroomDetail){
     const [isValidating, letValidating] = useState(false);
     const navigate = useNavigate();
     const inputs = [
-        new TextInputObject("Judul Chatroom", "", validateChatroomTitle),
-        new TextInputObject("Deskripsi Chatroom", "", noValidate, {
+        new TextInputObject("Chatroom Title", "", validateChatroomTitle),
+        new TextInputObject("Chatroom Description", "", noValidate, {
             isTextarea: true,
         }),
-        new FileInputObject("Thumbnail Chatroom", x => x ? "" : "Harus ada thumbnail untuk chatroom", {
+        new FileInputObject("Chatroom Thumbnail", x => x ? "" : "Chatroom thumbnail is required", {
             accept: "image/*"
         }),
-        new CheckboxInputObject("Pengaturan", [], [
-            {label: "Hapus Pesan Toksik", value:"filtered"},
-            {label: "Chatroom Publik", value:"public"}
+        new CheckboxInputObject("Settings", [], [
+            {label: "Delete Toxic Messages", value:"filtered"},
+            {label: "Public Chatroom", value:"public"}
         ], noValidate)
     ];
     function createNewChatroom(){
@@ -123,11 +123,11 @@ export function CreateNewChatroom({onClose}:CloseChatroomDetail){
         </div>
         <div className="p-1 d-flex flex-row-reverse">
             <PrimaryButton onClick={createNewChatroom} className="w-25">
-                Buat Chatroom Baru
+                Create New Chatroom
             </PrimaryButton>
             <button className="btn btn-secondary m-2 p-2 w-25"
             onClick={onClose}>
-                Batal
+                Cancel
             </button>
         </div>
     </div>

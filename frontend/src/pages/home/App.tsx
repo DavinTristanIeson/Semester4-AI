@@ -47,13 +47,13 @@ function MainView(){
             <CreateNewChatroom onClose={()=>setViewedChatroom(null)}/> :  
             <ChatroomJoinDetail onClose={() => setViewedChatroom(null)} chatroom={viewedChatroom.room!}/>
         )}
-        <h2>Ruangan Saya</h2>
+        <h2>My Chatrooms</h2>
         <div className="horizontal-scroll">
             <NewChatroomButton onClick={()=>setViewedChatroom({room: null, isNew: true})}/>
             {chatrooms?.mine.map(x => <ChatroomItem chatroom={x} key={x.id} onOpen={e => setViewedChatroom({room: e, isNew: false})}/>)}
         </div>
         <hr className="my-5"/>
-        <h2>Ruangan Publik</h2>
+        <h2>Public Chatrooms</h2>
         <div className="horizontal-scroll">
             {chatrooms?.public.map(x => <ChatroomItem chatroom={x} key={x.id} onOpen={e => setViewedChatroom({room: e, isNew: false})}/>)}
         </div>

@@ -7,8 +7,8 @@ import { isNotEmpty, validateEmail } from "../../helpers/inputValidators";
 
 function LoginForm(){
     const inputs = useRef([
-        new TextInputObject("Email", "", isNotEmpty("Email harus diisi")),
-        new TextInputObject("Password", "", isNotEmpty("Password harus diisi")),
+        new TextInputObject("Email", "", isNotEmpty("Email is required")),
+        new TextInputObject("Password", "", isNotEmpty("Password is required")),
     ]);
     const [isValidating, letValidate] = useState(false);
     const navigate = useNavigate();

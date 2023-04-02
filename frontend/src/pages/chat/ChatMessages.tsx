@@ -1,4 +1,4 @@
-import { RefObject, useCallback, useContext, useEffect, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { Message, UserAccount } from "../../helpers/classes";
 import { MemberIcon } from "./ChatMembers";
 import { ChatroomContext, CurrentUserContext } from "../../context";
@@ -37,7 +37,7 @@ function ChatInput({addMessage}:ChatInputProps){
         e.preventDefault();
         // TODO: send message
     }
-    return <textarea className="chat-input" placeholder="Pesan Anda" value={input} onChange={onChange} onKeyDown={detectEnter}>
+    return <textarea className="chat-input" placeholder="Your Message" value={input} onChange={onChange} onKeyDown={detectEnter}>
     </textarea>
 }
 
@@ -149,7 +149,7 @@ function ChatMessages(){
                     letNewMessage(false);
                     if (!scrollRef.current) return;
                     scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-                }} href='#' className="link-dark">Click untuk langsung ke bawah</a>
+                }} href='#' className="link-dark">Click to instantly go to the bottom.</a>
                 <button type="button" className="btn-close"
                 onClick={(e)=>{
                     e.stopPropagation();

@@ -24,7 +24,7 @@ export function BackButton(){
         navigate(-1);
     }
     return <button className="back-button d-flex align-items-center"
-    title="Kembali ke halaman sebelumnya" onClick={goBack}>
+    title="Go Back" onClick={goBack}>
         <div></div>
         <div></div>
     </button>

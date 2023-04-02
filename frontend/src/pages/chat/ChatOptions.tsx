@@ -22,16 +22,16 @@ function ChatOptions({onClose}:ChatOptionsProps){
         chatroomOptions.push("public");
 
     const inputs:[TextInputObject,TextInputObject,FileInputObject,CheckboxInputObject] = [
-        new TextInputObject("Judul Chatroom", chatroom.settings.title, validateChatroomTitle),
-        new TextInputObject("Deskripsi Chatroom", chatroom.settings.description, noValidate, {
+        new TextInputObject("Chatroom Title", chatroom.settings.title, validateChatroomTitle),
+        new TextInputObject("Chatroom Description", chatroom.settings.description, noValidate, {
             isTextarea: true,
         }),
-        new FileInputObject("Thumbnail Chatroom", noValidate, {
+        new FileInputObject("Chatroom Thumbnail", noValidate, {
             accept: "image/*"
         }),
-        new CheckboxInputObject("Pengaturan", chatroomOptions, [
-            {label: "Hapus Pesan Toksik", value:"filtered"},
-            {label: "Chatroom Publik", value:"public"}
+        new CheckboxInputObject("Settings", chatroomOptions, [
+            {label: "Delete Toxic Messages", value:"filtered"},
+            {label: "Public Chatroom", value:"public"}
         ], noValidate)
     ];
     function saveSettings(){
@@ -51,7 +51,7 @@ function ChatOptions({onClose}:ChatOptionsProps){
         onClose();
     }
     function deleteChatroom(){
-        if (!confirm("Apakah anda yakin anda mau menghapus chatroom ini?")) return;
+        if (!confirm("Are you sure you want to delete this chatroom?")) return;
         navigate("/", {replace: true});
         // TODO: send request ke backend
     }
@@ -65,14 +65,14 @@ function ChatOptions({onClose}:ChatOptionsProps){
         </div>
         <div className="p-1 d-flex flex-row-reverse">
             <PrimaryButton onClick={saveSettings} className="w-25">
-                Simpan
+                Save
             </PrimaryButton>
             <DangerButton onClick={deleteChatroom} className="w-25">
-                Delete Chatroom Ini
+                Delete This Chatroom
             </DangerButton>
             <button className="btn btn-secondary m-2 p-2 w-25"
             onClick={onClose}>
-                Batal
+                Cancel
             </button>
         </div>
     </div>

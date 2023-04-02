@@ -10,8 +10,8 @@ interface RequireUser {
 
 export function MemberInfo({user}:RequireUser){
     return <div className="member-info rounded bg-white py-2">
-        <h5>Tentang Saya</h5>
-        <p>{user.bio || <i>Pengguna tidak menulis bio</i>}</p>
+        <h5>About Me</h5>
+        <p>{user.bio || <i>User did not provide any information</i>}</p>
     </div>
 }
 
@@ -48,8 +48,8 @@ function ChatMembers({onOpenSettings}:ChatMembersProps){
             { chatroom!.members.map(x => <MemberListItem key={x.id} user={x}/>) }
         </div>
         {
-            chatroom && user && chatroom.ownerID == user.id && <PrimaryButton onClick={onOpenSettings}>
-                Pengaturan Chatroom
+            chatroom && user && chatroom.owner.id == user.id && <PrimaryButton onClick={onOpenSettings}>
+                Chatroom Settings
             </PrimaryButton>
         }
     </div>

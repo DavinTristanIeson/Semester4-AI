@@ -49,15 +49,15 @@ function FormLayout(){
             isLogin
             ?
             <>
-                <h1 className="text-center">Selamat Datang Kembali!</h1>
+                <h1 className="text-center">Welcome Back!</h1>
                 <LoginForm/>
-                <p className="position-absolute bottom-0">Belum ada akun? <PrimaryButton onClick={changeForm}>Daftar</PrimaryButton> di sini!</p>
+                <p className="position-absolute bottom-0">Don't have an account? <PrimaryButton onClick={changeForm}>Register</PrimaryButton> here!</p>
             </>
             :
             <>
-                <h1 className="text-center">Selamat Datang!</h1>
+                <h1 className="text-center">Welcome!</h1>
                 <RegisterForm/>
-                <p className="position-absolute bottom-0">Sudah ada akun? <PrimaryButton onClick={changeForm}>Login</PrimaryButton> di sini!</p>
+                <p className="position-absolute bottom-0">Already have an account? <PrimaryButton onClick={changeForm}>Login</PrimaryButton> here!</p>
             </>
         }
     </div>

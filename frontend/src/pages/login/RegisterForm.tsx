@@ -7,18 +7,18 @@ import { isNotEmpty, validateEmail, validateName, validatePassword } from "../..
 interface RegisterFormInputLabels {
     "Email":string,
     "Password":string,
-    "Nama":string,
-    "Tentang Anda":string,
-    "Foto Profil":File
+    "Name":string,
+    "About You":string,
+    "Profile Picture":File
 }
 
 function RegisterForm(){
     const inputs = useRef([
         new TextInputObject("Email", "", validateEmail),
         new TextInputObject("Password", "", validatePassword),
-        new TextInputObject("Nama", "", validateName),
-        new TextInputObject("Tentang Anda", "", (value)=>"", {isTextarea: true}),
-        new FileInputObject("Foto Profil", (file)=>(file ? "" : "Foto profil anda diperlukan"), {
+        new TextInputObject("Name", "", validateName),
+        new TextInputObject("About You", "", (value)=>"", {isTextarea: true}),
+        new FileInputObject("Profile Picture", (file)=>(file ? "" : "Profile picture is required"), {
             accept: "image/*"
         })
     ]);
@@ -29,9 +29,9 @@ function RegisterForm(){
         const formData = new FormData();
         formData.append("email", responses["Email"]);
         formData.append("password", responses["Password"]);
-        formData.append("name", responses["Nama"]);
-        formData.append("bio", responses["Tentang Anda"]);
-        formData.append("pfp", responses["Foto Profil"]);
+        formData.append("name", responses["Name"]);
+        formData.append("bio", responses["About You"]);
+        formData.append("pfp", responses["Profile Picture"]);
         return formData;
     }
 
@@ -60,7 +60,7 @@ function RegisterForm(){
         { inputs.current.map(x => <ArbitraryInput input={x} shouldValidate={isValidating} key={`${x.id}${isValidating}`}/>) }
         <div className="text-center">
             <input type="submit" className="btn btn-primary m-2 p-2 w-50 fw-bold"
-                value="Daftar"/>
+                value="Register"/>
         </div>
     </form>
 }
