@@ -11,16 +11,28 @@ import { useNavigate } from "react-router-dom";
 import Add from "../../assets/add.svg";
 import { API, CONNECTION_ERROR, SERVER_ERROR } from "../../helpers/constants";
 import { Loading } from "../../components/Informative";
+import { useInformativeFetch } from "../../helpers/fetch";
 
 function SearchView({searchTerm}:{searchTerm:string}){
     const [viewedChatroom, setViewedChatroom] = useState<ChatroomInfo|null>(null);
-    const context = useContext(PublicChatroomsContext); // hanya untuk debug
+    const infoFetch = useInformativeFetch();
 
-    const [chatrooms, setChatrooms] = useState<ChatroomInfo[]>(updateSearch());
-    function updateSearch(){
-        // TODO: query backend
-        return context!.public.filter(x => x.settings.title.startsWith(searchTerm))
+    const [chatrooms, setChatrooms] = useState<ChatroomInfo[]>([]);
+    async function updateSearch(){
+        const params = new URLSearchParams();
+        params.append("search", searchTerm);
+        try {
+            const res = await infoFetch(() => fetch(API + "/chatroom/public?" + params.toString(), {
+                credentials: "include"
+            }));
+            if (res.ok){
+                setChatrooms(ChatroomInfo.fromJSONArray(await res.json()));
+            }
+        } catch (e){}
     }
+    useEffect(()=>{
+        updateSearch();
+    }, [searchTerm]);
     
     return <>
         {viewedChatroom && <ChatroomJoinDetail hasJoined={false} onClose={() => setViewedChatroom(null)} chatroom={viewedChatroom}/>}

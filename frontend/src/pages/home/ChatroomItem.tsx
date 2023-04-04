@@ -76,8 +76,8 @@ export function ChatroomJoinDetail({chatroom, hasJoined, onClose}:ChatroomItemPr
     }
     return <div className="very-rounded chat-options thick-shadow bg-white">
         <div className="p-4">
-            <MaybeImage src={chatroom.settings.thumbnail} alt={chatroom.settings.title}/>
-            <div>
+            <MaybeImage src={chatroom.settings.thumbnail} alt={chatroom.settings.title} className="w-100"/>
+            <div className="ms-5">
                 <h2 className="m-0 p-0">{chatroom.settings.title}</h2>
                 <p className="fw-light">owned by {chatroom.owner.name}</p>
                 <p className="border-start ps-4">{chatroom.settings.description}</p>

@@ -25,7 +25,7 @@ router.get("/public", auth, async (req, res, next) => {
     const MEMBER_HAS_NOT_JOINED = " WHERE (SELECT COUNT(*) FROM user_rooms WHERE user_rooms.user_id = ? AND user_rooms.room_id = rooms.id ) = 0"
     try {
         if (req.query.search){
-            publicRooms = await db.all(CHATROOM_QUERY + MEMBER_HAS_NOT_JOINED + " AND rooms.title LIKE ?" + ROOM_IS_PUBLIC + CONSTRAINTS, [`${req.query.search}%`]);
+            publicRooms = await db.all(CHATROOM_QUERY + MEMBER_HAS_NOT_JOINED + " AND rooms.title LIKE ?" + ROOM_IS_PUBLIC + CONSTRAINTS, [req.session.user.id, `${req.query.search}%`]);
         } else {
             publicRooms = await db.all(CHATROOM_QUERY + MEMBER_HAS_NOT_JOINED + ROOM_IS_PUBLIC + CONSTRAINTS, [req.session.user.id]);
         }
