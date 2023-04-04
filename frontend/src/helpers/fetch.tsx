@@ -1,5 +1,5 @@
 import { Await, useLocation, useNavigate } from "react-router-dom";
-import { API, CONNECTION_ERROR } from "./constants";
+import { API, CONNECTION_ERROR, SERVER_ERROR } from "./constants";
 import { ReactNode, useContext, useEffect, useState } from "react";
 import { PageStateContext } from "../context";
 import { Suspense } from "react";
@@ -34,4 +34,27 @@ export function ProtectedRoute({children}:ProtectedRouteProps){
     return <>
         {hasLoaded && children}
     </>
+}
+
+export function useInformativeFetch(){
+    const pageState = useContext(PageStateContext);
+    return function (asyncfn: ()=>Promise<Response>){
+        return new Promise<Response>(async (resolve, reject)=>{
+            try {
+                const res = await asyncfn();
+                pageState?.letLoading(false);
+                if (res.ok){
+                    resolve(res);
+                } else {
+                    pageState?.setErrMsg(SERVER_ERROR, 3000); 
+                    reject(res);
+                }
+            } catch (e) {
+                console.error(e);
+                pageState?.letLoading(false);
+                pageState?.setErrMsg(CONNECTION_ERROR, 3000);
+                reject(e);
+            }
+        });
+    }
 }

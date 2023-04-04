@@ -1,11 +1,14 @@
-import { useContext } from "react";
+import { useContext, useRef } from "react";
 import { DangerButton, PrimaryButton } from "../../components/Buttons";
 import { MaybeImage } from "../../components/Image";
-import { ArbitraryInput } from "../../components/Inputs";
+import { ArbitraryInput, exportResponses } from "../../components/Inputs";
 import { CheckboxInputObject, FileInputObject, TextInputObject } from "../../helpers/inputs";
 import { noValidate, validateChatroomTitle } from "../../helpers/inputValidators";
 import { ChatroomContext } from "../../context";
 import { useNavigate } from "react-router-dom";
+import { useInformativeFetch } from "../../helpers/fetch";
+import { API } from "../../helpers/constants";
+import { Chatroom } from "../../helpers/classes";
 
 interface ChatOptionsProps {
     onClose: ()=>void
@@ -16,14 +19,15 @@ function ChatOptions({onClose}:ChatOptionsProps){
     const navigate = useNavigate();
 
     const chatroomOptions = [];
-    if (chatroom.settings.isToxicityFiltered)
+    if (chatroom?.room?.settings.isToxicityFiltered)
         chatroomOptions.push("filtered");
-    if (chatroom.settings.isPublic)
+    if (chatroom?.room?.settings.isPublic)
         chatroomOptions.push("public");
 
-    const inputs:[TextInputObject,TextInputObject,FileInputObject,CheckboxInputObject] = [
-        new TextInputObject("Chatroom Title", chatroom.settings.title, validateChatroomTitle),
-        new TextInputObject("Chatroom Description", chatroom.settings.description, noValidate, {
+    const infoFetch = useInformativeFetch();
+    const inputs = useRef([
+        new TextInputObject("Chatroom Title", chatroom?.room!.settings.title, validateChatroomTitle),
+        new TextInputObject("Chatroom Description", chatroom?.room!.settings.description, noValidate, {
             isTextarea: true,
         }),
         new FileInputObject("Chatroom Thumbnail", noValidate, {
@@ -33,34 +37,64 @@ function ChatOptions({onClose}:ChatOptionsProps){
             {label: "Delete Toxic Messages", value:"filtered"},
             {label: "Public Chatroom", value:"public"}
         ], noValidate)
-    ];
-    function saveSettings(){
-        let hasError = false;
-        const responses:{[key:string]:string|string[]|File|undefined} = {};
-        for (let input of inputs){
-            if (input.validate()){
-                hasError = true;
-                return;
-            }
-            responses[input.label] = input.value;
-        }
-        console.log(responses);
-        if (hasError) return;
-
-        // TODO: Save to backend
-        onClose();
+    ]);
+    function createFormData(responses:{[key:string]: string}){
+        const formData = new FormData();
+        formData.append("title", responses["Chatroom Title"]);
+        formData.append("description", responses["Chatroom Description"]);
+        formData.append("thumbnail", responses["Chatroom Thumbnail"]);
+        formData.append("isFiltered", responses["Settings"].includes("filtered") ? "yes" : "no");
+        formData.append("isPublic", responses["Settings"].includes("public") ? "yes" : "no");
+        return formData;
     }
-    function deleteChatroom(){
+    async function saveSettings(){
+        const [responses, hasError] = exportResponses(inputs.current);
+        if (hasError) return;
+        const formData = createFormData(responses);
+        try {
+            const res = await infoFetch(() => fetch(API + "/chatroom/" + chatroom?.room?.id, {
+                method: "PUT",
+                credentials: "include",
+                body: formData
+            }));
+            if (!res.ok) return;
+            chatroom.setRoom(room => {
+                if (!room) return room;
+                return new Chatroom(
+                    room.id,
+                    room.owner,
+                    room.members,
+                    {
+                        title: responses["Chatroom Title"] || room.settings.title,
+                        description: responses["Chatroom Description"] || room.settings.description,
+                        thumbnail: responses["Chatroom Thumbnail"] || room.settings.thumbnail,
+                        isToxicityFiltered: responses["Settings"] ? responses["Settings"].includes("filtered") : room.settings.isToxicityFiltered,
+                        isPublic: responses["Settings"] ? responses["Settings"].includes("public") : room.settings.isPublic,
+                    }
+                );
+            })
+            onClose();
+        } catch (e){}
+        
+    }
+    async function deleteChatroom(){
         if (!confirm("Are you sure you want to delete this chatroom?")) return;
-        navigate("/", {replace: true});
-        // TODO: send request ke backend
+        try {
+            const res = await infoFetch(() => fetch(API + "/chatroom/" + chatroom?.room?.id, {
+                method: "DELETE",
+                credentials: "include"
+            }));
+            if (res.ok){
+                navigate("/", {replace: true});
+            }
+        } catch (e){};
     }
 
     return <div className="very-rounded chat-options thick-shadow bg-white">
         <div className="p-4">
-            <MaybeImage src={chatroom.settings.thumbnail} alt={chatroom.settings.title}/>
+            <MaybeImage src={chatroom?.room!.settings.thumbnail} alt={chatroom?.room!.settings.title} className="w-100"/>
             <div>
-                {inputs.map(x => <ArbitraryInput input={x} shouldValidate={true} key={x.id}/>)}
+                {inputs.current.map(x => <ArbitraryInput input={x} shouldValidate={true} key={x.id}/>)}
             </div>
         </div>
         <div className="p-1 d-flex flex-row-reverse">

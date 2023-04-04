@@ -43,7 +43,7 @@ app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 app.use(sessionMiddleware);
 app.use("/api/accounts", AccountRouter);
-app.use("/api/chatroom", auth, ChatRouter);
+app.use("/api/chatroom", ChatRouter);
 app.get('/storage/:filename', async (req, res)=>{
 	const filename = "./storage/" + req.params.filename;
 	if (await fs.exists(filename)){

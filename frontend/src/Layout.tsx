@@ -30,9 +30,6 @@ function Layout(){
                 if (res.ok){
                     res.json()
                         .then(json => setUser(UserAccount.fromJSON(json)))
-                        .catch(() => messageHandler(SERVER_ERROR, 3000));
-                } else {
-                    messageHandler(SERVER_ERROR, 3000);
                 }
             })
     }, []);

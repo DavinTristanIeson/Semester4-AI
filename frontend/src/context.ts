@@ -5,7 +5,10 @@ export const CurrentUserContext = createContext<{
     user:UserAccount|null,
     setUser: React.Dispatch<React.SetStateAction<UserAccount|null>>,
 }|undefined>(undefined);
-export const ChatroomContext = createContext<Chatroom|undefined>(undefined);
+export const ChatroomContext = createContext<{
+    room:Chatroom|null,
+    setRoom: React.Dispatch<React.SetStateAction<Chatroom|null>>
+}|undefined>(undefined);
 export const PublicChatroomsContext = createContext<{
     mine:ChatroomInfo[],
     public:ChatroomInfo[],

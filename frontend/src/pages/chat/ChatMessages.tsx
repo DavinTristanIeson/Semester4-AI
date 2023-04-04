@@ -8,11 +8,11 @@ interface RequireMessage {
 }
 function ChatMessage({message}:RequireMessage){
     const currentUser = useContext(CurrentUserContext);
-    return <div className={`chat-message my-2 py-2 ps-3 ${(currentUser?.id == message.user.id ? "bg-highlight-dark" : "bg-highlight")}`}>
+    return <div className={`chat-message my-2 py-2 ps-3 ${(currentUser?.user?.id == message.user.id ? "bg-highlight-dark" : "bg-highlight")}`}>
         <div className="d-flex align-items-center justify-content-between me-3">
             <div className="d-flex align-items-center">
                 <MemberIcon user={message.user}/>
-                <h5 className="ms-2 m-0">{message.user.username}</h5>
+                <h5 className="ms-2 m-0">{message.user.name}</h5>
             </div>
             <p className="fw-light">{message.waktu}</p>
         </div>
@@ -32,7 +32,7 @@ function ChatInput({addMessage}:ChatInputProps){
     function detectEnter(e:React.KeyboardEvent<HTMLTextAreaElement>){
         if (e.key != "Enter") return;
         else if (e.shiftKey) return;
-        addMessage(new Message(Math.random(), currentUser!, input, new Date()));
+        addMessage(new Message(Math.random(), currentUser?.user!, input, new Date()));
         setInput("");
         e.preventDefault();
         // TODO: send message
@@ -43,7 +43,6 @@ function ChatInput({addMessage}:ChatInputProps){
 
 function useInfiniteScrolling(){
     async function loader(limit:number, offset:number){
-        // TEMP
         return Array.from({length: limit}, (_, i) => i+1+offset).map(x => new Message(Math.random(), new UserAccount(Math.random(), "davin@email.com", "DavinTristan", "Nama saya Davin", "none"), Math.random().toString(), new Date()));
     }
     const [messages, setMessages] = useState<Message[]>([]);
@@ -131,7 +130,7 @@ function ChatMessages(){
     }
 
     return <div className="col-9 chat-messages-list bg-white me-2 p-3 position-relative">
-        <h2 className="text-center">{chatroom?.settings.title}</h2>
+        <h2 className="text-center">{chatroom?.room?.settings.title}</h2>
         {
             messages.length > 0 &&
             <div className="overflow-y-scroll h-screen mb-2" ref={scrollContainer}>

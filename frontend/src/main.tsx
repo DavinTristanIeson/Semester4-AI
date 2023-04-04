@@ -5,7 +5,7 @@ import ChatPage from "./pages/chat/App";
 import HomePage from "./pages/home/App";
 import LoginPage from "./pages/login/App";
 import Layout from './Layout';
-import { ProtectedRoute } from './helpers/auth';
+import { ProtectedRoute } from './helpers/fetch';
 
 import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom';
 

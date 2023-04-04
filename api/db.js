@@ -20,8 +20,10 @@ FOREIGN KEY (room_id) REFERENCES rooms (id) ON UPDATE CASCADE ON DELETE CASCADE,
 PRIMARY KEY (user_id, room_id))`);
   await db.run(`CREATE TABLE IF NOT EXISTS rooms (
 id INTEGER PRIMARY KEY AUTOINCREMENT,
-room_name TEXT NOT NULL,
 owner_id TEXT NOT NULL,
+title TEXT NOT NULL,
+description TEXT NOT NULL,
+thumbnail TEXT NOT NULL,
 is_filtered INT DEFAULT 0,
 is_public INT DEFAULT 0,
 FOREIGN KEY (owner_id) REFERENCES users (id) ON UPDATE CASCADE ON DELETE CASCADE)`);

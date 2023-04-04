@@ -23,7 +23,7 @@ function SearchView({searchTerm}:{searchTerm:string}){
     }
     
     return <>
-        {viewedChatroom && <ChatroomJoinDetail onClose={() => setViewedChatroom(null)} chatroom={viewedChatroom}/>}
+        {viewedChatroom && <ChatroomJoinDetail hasJoined={false} onClose={() => setViewedChatroom(null)} chatroom={viewedChatroom}/>}
         <div className="vertical-scroll">
             {chatrooms.map(x => <ChatroomListItem chatroom={x} onOpen={setViewedChatroom}/>)}
         </div>
@@ -41,23 +41,24 @@ function MainView(){
     const [viewedChatroom, setViewedChatroom] = useState<{
         room: ChatroomInfo|null,
         isNew:boolean,
+        hasJoined: boolean
     }|null>(null);
     
     return <>
         {viewedChatroom && (
             viewedChatroom.isNew ?
             <CreateNewChatroom onClose={()=>setViewedChatroom(null)}/> :  
-            <ChatroomJoinDetail onClose={() => setViewedChatroom(null)} chatroom={viewedChatroom.room!}/>
+            <ChatroomJoinDetail hasJoined={viewedChatroom.hasJoined} onClose={() => setViewedChatroom(null)} chatroom={viewedChatroom.room!}/>
         )}
         <h2>My Chatrooms</h2>
         <div className="horizontal-scroll">
-            <NewChatroomButton onClick={()=>setViewedChatroom({room: null, isNew: true})}/>
-            {chatrooms?.mine.map(x => <ChatroomItem chatroom={x} key={x.id} onOpen={e => setViewedChatroom({room: e, isNew: false})}/>)}
+            <NewChatroomButton onClick={()=>setViewedChatroom({room: null, isNew: true, hasJoined: false})}/>
+            {chatrooms?.mine.map(x => <ChatroomItem chatroom={x} key={x.id} onOpen={e => setViewedChatroom({room: e, isNew: false, hasJoined: true})}/>)}
         </div>
         <hr className="my-5"/>
         <h2>Public Chatrooms</h2>
         <div className="horizontal-scroll">
-            {chatrooms?.public.map(x => <ChatroomItem chatroom={x} key={x.id} onOpen={e => setViewedChatroom({room: e, isNew: false})}/>)}
+            {chatrooms?.public.map(x => <ChatroomItem chatroom={x} key={x.id} onOpen={e => setViewedChatroom({room: e, isNew: false, hasJoined: false})}/>)}
         </div>
     </>
 }
@@ -67,19 +68,9 @@ function App(){
     const [displayedSearchTerm, setDisplayedSearchTerm] = useState("");
 
     const user = useContext(CurrentUserContext);
-    const [myChatrooms, setMyChatrooms] = useState(Array.from({length: 10}, (_, i) => i+1).map(x => new ChatroomInfo(
-        x, new UserAccount(x, "davin@email.com", "DavinTristan", "Nama saya Davin", "none"),
-        Math.floor(Math.random()*200+20),
-        true,
-        {
-            title: "Chatroom",
-            thumbnail: "",
-            description: "Hallo",
-            isToxicityFiltered: true,
-            isPublic: false,
-        })
-    ));
-    const [publicChatrooms, setPublicChatrooms] = useState(myChatrooms.map(x => new ChatroomInfo(x.id, x.owner, x.memberCount, false, x.settings)));
+    const [myChatrooms, setMyChatrooms] = useState<ChatroomInfo[]>([]);
+    const [publicChatrooms, setPublicChatrooms] = useState<ChatroomInfo[]>([]);
+    const pageState = useContext(PageStateContext);
     const chatrooms = {
         mine: myChatrooms,
         public: publicChatrooms,
@@ -87,9 +78,38 @@ function App(){
         setPublic: setPublicChatrooms,
     };
 
+    useEffect(()=>{
+        pageState?.letLoading(true);
+        try {
+            fetch(API + "/chatroom/mine", {credentials: "include"})
+                .then(res => {
+                    if (res.ok) return res.json()
+                        .then(json => setMyChatrooms(ChatroomInfo.fromJSONArray(json)))
+                        .catch((e) => {
+                            console.error(e);
+                            pageState?.setErrMsg(SERVER_ERROR, 3000);
+                        });
+                    else pageState?.setErrMsg(SERVER_ERROR, 3000);
+                });
+            fetch(API + "/chatroom/public", {credentials: "include"})
+                .then(res => {
+                    if (res.ok) return res.json()
+                        .then(json => setPublicChatrooms(ChatroomInfo.fromJSONArray(json)))
+                        .catch((e) => {
+                            console.error(e);
+                            pageState?.setErrMsg(SERVER_ERROR, 3000);
+                        });
+                    else pageState?.setErrMsg(SERVER_ERROR, 3000);
+                });
+        } catch (e){
+            console.error(e);
+            pageState?.setErrMsg(CONNECTION_ERROR, 3000);
+        }
+        pageState?.letLoading(false);
+    }, []);
+
 
     const navigate = useNavigate();
-    const pageState = useContext(PageStateContext);
     async function logout(){
         pageState?.letLoading(true);
         try {

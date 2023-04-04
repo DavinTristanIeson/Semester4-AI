@@ -110,3 +110,15 @@ export function CheckboxInput({input, shouldValidate, className}:InputProps<Chec
         {error && <div className="text-danger">{ error }</div>}
     </div>
 }
+
+export function exportResponses(inputs:InputObject[]):[{[key:string]:any}, boolean]{
+    let hasError = false;
+    const responses:{[key:string]:any} = {};
+    for (let input of inputs){
+        responses[input.label] = input.value;
+        if (input.validate()){
+            hasError = true;
+        }
+    }
+    return [responses, hasError];
+}

@@ -46,15 +46,21 @@ export class ChatroomInfo {
     // Untuk ditampilkan di halaman /home
     readonly id:number;
     owner:UserAccount;
-    memberCount:number;
-    hasJoined:boolean;
     settings:ChatroomSettings
-    constructor(id:number, owner:UserAccount, memberCount:number, hasJoined:boolean, settings:ChatroomSettings){
+    constructor(id:number, owner:UserAccount, settings:ChatroomSettings){
         this.id = id;
         this.owner = owner;
-        this.memberCount = memberCount;
-        this.hasJoined = hasJoined;
         this.settings = settings;
+    }
+    static fromJSON(json:any){
+        return new ChatroomInfo(
+            json.id,
+            UserAccount.fromJSON(json.owner),
+            {...json.settings, thumbnail: STORAGE + json.settings.thumbnail}
+        )
+    }
+    static fromJSONArray(json:any[]){
+        return json.map((x:any) => ChatroomInfo.fromJSON(x));
     }
 }
 
@@ -68,5 +74,19 @@ export class Chatroom {
         this.owner = owner;
         this.members = members;
         this.settings = settings;
+    }
+    static fromJSON(json:any){
+        return new Chatroom(
+            json.id,
+            UserAccount.fromJSON(json.owner),
+            json.members.map((x:any) => UserAccount.fromJSON(x)),
+            {
+                ...json.settings,
+                thumbnail: STORAGE + json.settings.thumbnail,
+            }
+        )
+    }
+    static fromJSONArray(json:any[]){
+        return json.map((x:any) => ChatroomInfo.fromJSON(x));
     }
 }

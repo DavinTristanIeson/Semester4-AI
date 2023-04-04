@@ -12,12 +12,11 @@ export let DEFAULT_IMAGE_SOURCE = "/image-not-available.jpg"
 export function MaybeImage({src, alt, defaultImage, className, onClick}: MaybeImageProps){
     const [noImage, letNoImage] = useState(false);
     function imageNotAvailable(){
-        console.log(src);
         letNoImage(true);
     }
     return <>{
         noImage ?
         <img className={className} src={DEFAULT_IMAGE_SOURCE} alt={alt} onClick={onClick}/> :
-        <img className={className} src={src} alt={alt} onError={imageNotAvailable} onClick={onClick}/>
+        <img className={"object-fit-cover " + (className ?? '')} src={src} alt={alt} onError={imageNotAvailable} onClick={onClick}/>
     }</>
 }

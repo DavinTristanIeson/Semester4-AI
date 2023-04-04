@@ -3,33 +3,37 @@ import ChatMembers from './ChatMembers';
 import ChatMessages from './ChatMessages';
 
 import "./chat.css";
-import { createContext, CSSProperties, useState } from 'react';
+import { createContext, CSSProperties, useEffect, useState } from 'react';
 import { Chatroom, UserAccount } from '../../helpers/classes';
 import { ChatroomContext, CurrentUserContext } from '../../context';
 import { BackButton } from '../../components/Buttons';
 import ChatOptions from './ChatOptions';
+import { useInformativeFetch } from '../../helpers/fetch';
+import { API } from '../../helpers/constants';
+import { Loading } from '../../components/Informative';
 
 function App(){
     const { id } = useParams();
-    const currentUser = new UserAccount(9, "davin@email.com", "DavinTristan", "Nama saya Davin", "none");
-    const chatroom = new Chatroom(1, new UserAccount(9, "davin@email.com", "DavinTristan", "Nama saya Davin", "none"), Array.from({length: 10}, (_, i) => i+1).map(x => new UserAccount(x, "davin@email.com", "DavinTristan", "Nama saya Davin", "none")), {
-        title: "Chatroom",
-        thumbnail: "",
-        description: "Hallo",
-        isToxicityFiltered: true,
-        isPublic: false,
-    });
+    const infoFetch = useInformativeFetch();
+    const [chatroom, setChatroom] = useState<Chatroom|null>(null);
+    useEffect(() => {
+        try {
+            infoFetch(() => fetch(API + "/chatroom/" + id, { credentials: "include"}))
+                .then(res => res.json())
+                .then(json => setChatroom(Chatroom.fromJSON(json)));
+        } catch (e) {}
+    }, []);
     const [isOptionsOpen, letOptionsOpen] = useState(false);
-    return <CurrentUserContext.Provider value={currentUser}>
-        <ChatroomContext.Provider value={chatroom}>
-            <BackButton/>
+    return <ChatroomContext.Provider value={{room: chatroom, setRoom: setChatroom}}>
+        <BackButton/>
+        <Loading dependency={chatroom}>
             <div className="d-flex justify-content-stretch mt-4 mx-3">
                 <ChatMessages/>
                 <ChatMembers onOpenSettings={()=>letOptionsOpen(true)}/>
             </div>
-            {isOptionsOpen && <ChatOptions onClose={()=>letOptionsOpen(false)}/>}
-        </ChatroomContext.Provider>
-    </CurrentUserContext.Provider>
+        </Loading>
+        {isOptionsOpen && <ChatOptions onClose={()=>letOptionsOpen(false)}/>}
+    </ChatroomContext.Provider>
 }
 
 export default App;

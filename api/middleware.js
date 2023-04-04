@@ -18,7 +18,7 @@ module.exports = {
     else res.status(404).end();
   },
   async isChatroomOwner(req, res, next){
-    const { owner_id } = await db.get("SELECT rooms.owner_id JOIN rooms ON rooms.id = user_rooms.room_id FROM user_rooms WHERE user_id = ? AND room_id = ?", [req.session.user.id, req.params.id]);
+    const { owner_id } = await db.get("SELECT rooms.owner_id FROM user_rooms JOIN rooms ON rooms.id = user_rooms.room_id WHERE user_id = ? AND room_id = ?", [req.session.user.id, req.params.id]);
     if (owner_id == req.session.user.id) next();
     else res.status(401).end();
   },
@@ -36,12 +36,16 @@ module.exports = {
         pfp: chatroom.owner_pfp,
       },
       settings: {
-          isToxicityFiltered: chatroom.isFiltered,
-          isPublic: chatroom.isPublic,
+        title: chatroom.title,
+        thumbnail: chatroom.thumbnail,
+        description: chatroom.description,
+        isToxicityFiltered: !!chatroom.is_filtered,
+        isPublic: !!chatroom.is_public,
       }
     }
   },
   createChatroomObject(chatroom, members){
+    const users = members.map(user => ({id: user.id, email: user.email, name: user.name, bio: user.bio, pfp: user.pfp_path}));
     return {
         id: chatroom.room_id,
         owner: {
@@ -51,10 +55,13 @@ module.exports = {
           bio: chatroom.owner_bio,
           pfp: chatroom.owner_pfp,
         },
-        members: members.map(member => this.createUserObject(member)),
+        members: users,
         settings: {
-            isToxicityFiltered: chatroom.isFiltered,
-            isPublic: chatroom.isPublic,
+          title: chatroom.title,
+          thumbnail: chatroom.thumbnail,
+          description: chatroom.description,
+          isToxicityFiltered: !!chatroom.is_filtered,
+          isPublic: !!chatroom.is_public,
         }
     }
   }

@@ -1,6 +1,6 @@
 import { useContext, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArbitraryInput } from "../../components/Inputs";
+import { ArbitraryInput, exportResponses } from "../../components/Inputs";
 import { FileInputObject, TextInputObject } from "../../helpers/inputs";
 import { isNotEmpty, validateEmail, validateName, validatePassword } from "../../helpers/inputValidators";
 import { API, CONNECTION_ERROR, SERVER_ERROR } from "../../helpers/constants";
@@ -42,19 +42,11 @@ function RegisterForm(){
 
     async function onSubmit(e:React.FormEvent<HTMLFormElement>){
         e.preventDefault();
-        let hasError:boolean = false;
-        const responses:{[key:string]:string|File|undefined} = {}
-        for (let input of inputs.current){
-            responses[input.label] = input.value;
-            if (input.validate()){
-                hasError = true; break;
-            }
-        }
+        const [responses, hasError] = exportResponses(inputs.current);
         letValidate(true);
         if (hasError) return;
 
         const formData = createFormData(responses as unknown as RegisterFormInputLabels);
-        console.log(Array.from(formData.values()));
 
         pageState?.letLoading(true);
         try {

@@ -1,7 +1,7 @@
 import { useContext, useReducer, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { PrimaryButton } from "../../components/Buttons";
-import { ArbitraryInput, TextInput } from "../../components/Inputs";
+import { ArbitraryInput, TextInput, exportResponses } from "../../components/Inputs";
 import { TextInputObject } from "../../helpers/inputs";
 import { isNotEmpty, validateEmail } from "../../helpers/inputValidators";
 import { API, CONNECTION_ERROR, SERVER_ERROR } from "../../helpers/constants";
@@ -20,15 +20,7 @@ function LoginForm(){
     
     async function onSubmit(e:React.FormEvent<HTMLFormElement>){
         e.preventDefault();
-        let hasError:boolean = false;
-        const responses: {[key:string]: string} = {};
-        for (let input of inputs.current){
-            responses[input.label] = input.value;
-            if (input.validate()){
-                hasError = true;
-                break;
-            }
-        }
+        const [responses, hasError] = exportResponses(inputs.current);
         letValidate(true);
         if (hasError) return;
 
