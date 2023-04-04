@@ -8,10 +8,10 @@ const fs = require("fs/promises");
 const upload = require('./pfp.js');
 
 function validateRegister(req, res, next) {
-  const { email, password, name, bio } = req.body;
-  if (!email || !password || !name || !bio ) {
+  const { email, password, name } = req.body;
+  if (!email || !password || !name ) {
     res.status(400).json({
-      message: "Expecting the following fields: email, password, name, and bio",
+      message: "Expecting the following fields: email, password, and name",
     });
     return;
   }
@@ -41,25 +41,27 @@ function validateRegister(req, res, next) {
   }
 }
 
-router.post("/register", validateRegister, upload.single("pfp"), async (req, res, next) => {
+router.post("/register", upload.single("pfp"), validateRegister, async (req, res, next) => {
   const { email, password, name, bio } = req.body;
-  const { pfp } = req.files;
-  if (!pfp || pfp.length == 0){
+  const pfp = req.file;
+  if (!pfp){
     res.status(400).json({message: "Sebuah gambar sebagai pfp pengguna harus disediakan!"});
     return;
   }
+  let lastID;
 	try {
 		const saltRounds = 10;
 		const hash = await bcrypt.hash(password, saltRounds);
-    //ni gambar masukkin ke server n ambil locationnya saya belum paham (pfp)
-		await db.run("INSERT INTO users VALUES (NULL, ?, ?, ?, ?, ?)", [email, hash, name, bio, pfp[0].filename]);
-	} catch (err) {
+		const changed = await db.run("INSERT INTO users VALUES (NULL, ?, ?, ?, ?, ?)", [email, hash, name, bio ?? "", pfp.filename]);
+    lastID = changed.lastID;
+  } catch (err) {
+    console.error(err);
 		res.status(400).json({message: "Email tersebut sudah digunakan orang lain."});
 		return;
 	}
 
 	try {
-		const user = await db.get("SELECT * FROM users WHERE email = ?", [email]);
+		const user = await db.get("SELECT * FROM users WHERE id = ?", [lastID]);
 		if (!user) res.status(500).end();
 		else {
 			req.session.user = {id: user.id};

@@ -1,5 +1,5 @@
 import { useContext, useState } from "react";
-import { CurrentUserContext, PublicChatroomsContext } from "../../context";
+import { CurrentUserContext, PageStateContext, PublicChatroomsContext } from "../../context";
 import { Chatroom, ChatroomInfo, UserAccount } from "../../helpers/classes";
 import { ChatroomItem, ChatroomJoinDetail, ChatroomListItem, CreateNewChatroom } from "./ChatroomItem";
 import { KeyboardEvent, FocusEvent } from "react";
@@ -9,6 +9,7 @@ import { DangerButton, PrimaryButton } from "../../components/Buttons";
 import { useNavigate } from "react-router-dom";
 
 import Add from "../../assets/add.svg";
+import { API, CONNECTION_ERROR, SERVER_ERROR } from "../../helpers/constants";
 
 function SearchView({searchTerm}:{searchTerm:string}){
     const [viewedChatroom, setViewedChatroom] = useState<ChatroomInfo|null>(null);
@@ -87,8 +88,25 @@ function App(){
 
 
     const navigate = useNavigate();
-    function logout(){
-        navigate("/login", {replace: true});
+    const pageState = useContext(PageStateContext);
+    async function logout(){
+        pageState?.letLoading(true);
+        try {
+            const res = await fetch(API + "/accounts/logout", {
+                method: "POST",
+                credentials: "include"
+            });
+            pageState?.letLoading(false);
+            if (res.ok){
+                navigate("/login", {replace: true});
+            } else {
+                pageState?.setErrMsg(SERVER_ERROR, 3000);
+            }
+        } catch (e){
+            console.error(e);
+            pageState?.letLoading(false);
+            pageState?.setErrMsg(CONNECTION_ERROR, 3000);
+        }
     }
     function toProfile(){
         navigate("/account");

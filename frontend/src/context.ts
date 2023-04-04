@@ -9,3 +9,11 @@ export const PublicChatroomsContext = createContext<{
     setMine: React.Dispatch<React.SetStateAction<ChatroomInfo[]>>,
     setPublic: React.Dispatch<React.SetStateAction<ChatroomInfo[]>>,
 }|undefined>(undefined);
+
+export const PageStateContext = createContext<{
+    isLoading: boolean,
+    errMsg: string,
+    letLoading: React.Dispatch<React.SetStateAction<boolean>>,
+    setErrMsg: (message:string, timeout:number|null) => void,
+    cleanup: () => void,
+}|undefined>(undefined);

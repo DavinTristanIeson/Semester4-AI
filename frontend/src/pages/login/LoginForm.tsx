@@ -1,9 +1,11 @@
-import { useReducer, useRef, useState } from "react";
+import { useContext, useReducer, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { PrimaryButton } from "../../components/Buttons";
 import { ArbitraryInput, TextInput } from "../../components/Inputs";
 import { TextInputObject } from "../../helpers/inputs";
 import { isNotEmpty, validateEmail } from "../../helpers/inputValidators";
+import { API, CONNECTION_ERROR, SERVER_ERROR } from "../../helpers/constants";
+import { PageStateContext } from "../../context";
 
 function LoginForm(){
     const inputs = useRef([
@@ -12,24 +14,50 @@ function LoginForm(){
     ]);
     const [isValidating, letValidate] = useState(false);
     const navigate = useNavigate();
+    const pageState = useContext(PageStateContext);
     
-    function onSubmit(e:React.FormEvent<HTMLFormElement>){
+    async function onSubmit(e:React.FormEvent<HTMLFormElement>){
         e.preventDefault();
         let hasError:boolean = false;
+        const responses: {[key:string]: string} = {};
         for (let input of inputs.current){
+            responses[input.label] = input.value;
             if (input.validate()){
-                hasError = true; break;
+                hasError = true;
+                break;
             }
         }
         letValidate(true);
         if (hasError) return;
 
-        const formData = new FormData();
-        formData.append("email", inputs.current[0].value);
-        formData.append("password", inputs.current[1].value);
-        console.log(Array.from(formData.values()));
-        
-        navigate("/", {replace:true});
+        pageState?.letLoading(true);
+
+        try {
+            const res = await fetch(API + "/accounts/login", {
+                method: "POST",
+                credentials: "include",
+                headers: {
+                    'Content-Type': "application/json"
+                },
+                body: JSON.stringify({
+                    email: responses["Email"],
+                    password: responses["Password"]
+                })
+            });
+            pageState?.letLoading(false);
+            if (res.ok){
+                pageState?.setErrMsg("", null);
+                navigate("/", {replace:true});
+            } else if (res.status == 500){
+                pageState?.setErrMsg(SERVER_ERROR, 3000);
+            } else {
+                pageState?.setErrMsg((await res.json()).message, 3000);
+            }
+        } catch (e){
+            console.error(e);
+            pageState?.letLoading(false);
+            pageState?.setErrMsg(CONNECTION_ERROR, 3000);
+        }
         // TODO: send request to backend
     }
     return <form action='/login' method='post' onSubmit={onSubmit}>

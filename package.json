@@ -13,7 +13,8 @@
 		"sqlite3": "^5.1.4"
 	},
 	"scripts": {
-		"dev": "node index"
+		"dev": "node index",
+		"reset": "python reset.py"
 	},
 	"keywords": [],
 	"contributors": [
