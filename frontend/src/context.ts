@@ -1,7 +1,10 @@
 import { createContext } from "react";
 import { Chatroom, ChatroomInfo, UserAccount } from "./helpers/classes";
 
-export const CurrentUserContext = createContext<UserAccount|undefined>(undefined);
+export const CurrentUserContext = createContext<{
+    user:UserAccount|null,
+    setUser: React.Dispatch<React.SetStateAction<UserAccount|null>>,
+}|undefined>(undefined);
 export const ChatroomContext = createContext<Chatroom|undefined>(undefined);
 export const PublicChatroomsContext = createContext<{
     mine:ChatroomInfo[],

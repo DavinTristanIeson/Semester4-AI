@@ -1,7 +1,9 @@
 import { Outlet } from "react-router-dom";
 import { ErrorAlert, Spinner } from "./components/Informative";
-import { useRef, useState } from "react";
-import { PageStateContext } from "./context";
+import { useEffect, useRef, useState } from "react";
+import { CurrentUserContext, PageStateContext } from "./context";
+import { UserAccount } from "./helpers/classes";
+import { API, SERVER_ERROR } from "./helpers/constants";
 
 function Layout(){
     const [isLoading, letLoading] = useState(false);
@@ -20,11 +22,27 @@ function Layout(){
         clearInterval(timeoutID.current);
         setErrMsg("");
     }
+
+    let [user, setUser] = useState<UserAccount|null>(null);
+    useEffect(()=>{
+        fetch(API + "/accounts/", {credentials: "include"})
+            .then(res => {
+                if (res.ok){
+                    res.json()
+                        .then(json => setUser(UserAccount.fromJSON(json)))
+                        .catch(() => messageHandler(SERVER_ERROR, 3000));
+                } else {
+                    messageHandler(SERVER_ERROR, 3000);
+                }
+            })
+    }, []);
     return <>
     <PageStateContext.Provider value={{isLoading, errMsg, letLoading, setErrMsg: messageHandler, cleanup}}>
+        <CurrentUserContext.Provider value={{user, setUser}}>
         {isLoading && <Spinner/>}
         {errMsg.length > 0 && <ErrorAlert message={errMsg} isFloating={true}/>}
         <Outlet/>
+        </CurrentUserContext.Provider>
     </PageStateContext.Provider>
     </>
 }

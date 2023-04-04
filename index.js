@@ -6,8 +6,11 @@ const AccountRouter = require("./api/account");
 const ChatRouter = require("./api/chat");
 const { auth } = require("./api/middleware");
 const fs = require("fs/promises");
+fs.exists = (function (fp) {
+  return this.access(fp).then(()=>true).catch(()=>false);
+}).bind(fs);
 (async function(){
-  if (!(await fs.access("./storage").then(()=>true).catch(()=>false))){
+  if (!(await fs.exists("./storage"))){
     fs.mkdir("./storage");
   }
 })();

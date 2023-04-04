@@ -1,3 +1,5 @@
+import { ReactNode, useContext } from "react"
+import { PageStateContext } from "../context"
 
 export function Spinner(){
     return <div className="spinner-border text-primary" role="status">
@@ -17,4 +19,14 @@ export function ErrorAlert({message, isFloating, onClose}: AlertProps){
     >
         { message }
     </div>
+}
+
+export function Loading({dependency, children}: {children:ReactNode, dependency:unknown|null}){
+    const pageState = useContext(PageStateContext);
+    if (!dependency){
+        pageState?.letLoading(true);
+    }
+    return <>
+        {dependency && children}
+    </>
 }

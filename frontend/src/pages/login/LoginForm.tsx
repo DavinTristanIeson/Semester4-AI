@@ -5,7 +5,8 @@ import { ArbitraryInput, TextInput } from "../../components/Inputs";
 import { TextInputObject } from "../../helpers/inputs";
 import { isNotEmpty, validateEmail } from "../../helpers/inputValidators";
 import { API, CONNECTION_ERROR, SERVER_ERROR } from "../../helpers/constants";
-import { PageStateContext } from "../../context";
+import { CurrentUserContext, PageStateContext } from "../../context";
+import { UserAccount } from "../../helpers/classes";
 
 function LoginForm(){
     const inputs = useRef([
@@ -14,6 +15,7 @@ function LoginForm(){
     ]);
     const [isValidating, letValidate] = useState(false);
     const navigate = useNavigate();
+    const user = useContext(CurrentUserContext);
     const pageState = useContext(PageStateContext);
     
     async function onSubmit(e:React.FormEvent<HTMLFormElement>){
@@ -46,6 +48,7 @@ function LoginForm(){
             });
             pageState?.letLoading(false);
             if (res.ok){
+                user?.setUser(UserAccount.fromJSON(await res.json()));
                 pageState?.setErrMsg("", null);
                 navigate("/", {replace:true});
             } else if (res.status == 500){

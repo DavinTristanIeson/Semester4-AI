@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface MaybeImageProps {
     src:string,
@@ -10,9 +10,14 @@ interface MaybeImageProps {
 
 export let DEFAULT_IMAGE_SOURCE = "/image-not-available.jpg"
 export function MaybeImage({src, alt, defaultImage, className, onClick}: MaybeImageProps){
-    const [imgSrc, setImgSrc] = useState(src);
+    const [noImage, letNoImage] = useState(false);
     function imageNotAvailable(){
-        setImgSrc(defaultImage || DEFAULT_IMAGE_SOURCE);
+        console.log(src);
+        letNoImage(true);
     }
-    return <img className={className} src={imgSrc} alt={alt} onError={imageNotAvailable} onClick={onClick}/>
+    return <>{
+        noImage ?
+        <img className={className} src={DEFAULT_IMAGE_SOURCE} alt={alt} onClick={onClick}/> :
+        <img className={className} src={src} alt={alt} onError={imageNotAvailable} onClick={onClick}/>
+    }</>
 }

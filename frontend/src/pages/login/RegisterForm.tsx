@@ -4,7 +4,8 @@ import { ArbitraryInput } from "../../components/Inputs";
 import { FileInputObject, TextInputObject } from "../../helpers/inputs";
 import { isNotEmpty, validateEmail, validateName, validatePassword } from "../../helpers/inputValidators";
 import { API, CONNECTION_ERROR, SERVER_ERROR } from "../../helpers/constants";
-import { PageStateContext } from "../../context";
+import { CurrentUserContext, PageStateContext } from "../../context";
+import { UserAccount } from "../../helpers/classes";
 
 interface RegisterFormInputLabels {
     "Email":string,
@@ -26,7 +27,8 @@ function RegisterForm(){
     ]);
     const [isValidating, letValidate] = useState(false);
     const navigate = useNavigate();
-    const pageState = useContext(PageStateContext)!;
+    const pageState = useContext(PageStateContext);
+    const user = useContext(CurrentUserContext);
     
     function createFormData(responses:RegisterFormInputLabels){
         const formData = new FormData();
@@ -54,16 +56,17 @@ function RegisterForm(){
         const formData = createFormData(responses as unknown as RegisterFormInputLabels);
         console.log(Array.from(formData.values()));
 
-        pageState.letLoading(true);
+        pageState?.letLoading(true);
         try {
             const res = await fetch(API + "/accounts/register", {
                 credentials: "include",
                 method: "POST",
                 body: formData
             });
-            pageState.letLoading(false);
-            pageState.cleanup()
+            pageState?.letLoading(false);
+            pageState?.cleanup()
             if (res.ok){
+                user?.setUser(UserAccount.fromJSON(await res.json()));
                 navigate("/", {replace:true});
             } else if (res.status == 500){
                 pageState?.setErrMsg(SERVER_ERROR, 3000);
@@ -72,8 +75,8 @@ function RegisterForm(){
             }
         } catch (err){
             console.error(err);
-            pageState.letLoading(false);
-            pageState.setErrMsg(CONNECTION_ERROR, 3000);
+            pageState?.letLoading(false);
+            pageState?.setErrMsg(CONNECTION_ERROR, 3000);
         }
     }
     return <form action='/register' method='post' onSubmit={onSubmit}>

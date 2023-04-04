@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { CurrentUserContext, PageStateContext, PublicChatroomsContext } from "../../context";
 import { Chatroom, ChatroomInfo, UserAccount } from "../../helpers/classes";
 import { ChatroomItem, ChatroomJoinDetail, ChatroomListItem, CreateNewChatroom } from "./ChatroomItem";
@@ -10,6 +10,7 @@ import { useNavigate } from "react-router-dom";
 
 import Add from "../../assets/add.svg";
 import { API, CONNECTION_ERROR, SERVER_ERROR } from "../../helpers/constants";
+import { Loading } from "../../components/Informative";
 
 function SearchView({searchTerm}:{searchTerm:string}){
     const [viewedChatroom, setViewedChatroom] = useState<ChatroomInfo|null>(null);
@@ -65,7 +66,7 @@ function App(){
     const [searchTerm, setSearchTerm] = useState("");
     const [displayedSearchTerm, setDisplayedSearchTerm] = useState("");
 
-    const currentUser = new UserAccount(9, "davin@email.com", "DavinTristan", "Nama saya Davin", "none");
+    const user = useContext(CurrentUserContext);
     const [myChatrooms, setMyChatrooms] = useState(Array.from({length: 10}, (_, i) => i+1).map(x => new ChatroomInfo(
         x, new UserAccount(x, "davin@email.com", "DavinTristan", "Nama saya Davin", "none"),
         Math.floor(Math.random()*200+20),
@@ -98,6 +99,7 @@ function App(){
             });
             pageState?.letLoading(false);
             if (res.ok){
+                user?.setUser(null);
                 navigate("/login", {replace: true});
             } else {
                 pageState?.setErrMsg(SERVER_ERROR, 3000);
@@ -112,8 +114,7 @@ function App(){
         navigate("/account");
     }
     
-    return <CurrentUserContext.Provider value={currentUser}>
-        <PublicChatroomsContext.Provider value={chatrooms}>
+    return <PublicChatroomsContext.Provider value={chatrooms}>
         <div className="mx-5 mt-3">
             <div className="d-flex align-items-center mb-5">
                 <input type="search" placeholder="Search" className="search-bar thick-shadow"
@@ -125,14 +126,15 @@ function App(){
                     }
                 }}
                 onBlur={e => setSearchTerm(e.target.value)}/>
-                <MaybeImage className="icon-circle ms-5" src={currentUser.pfp} alt={currentUser.username}
-                onClick={toProfile}/>
+                <Loading dependency={user?.user}>
+                    <MaybeImage className="icon-circle ms-5" src={user?.user?.pfp ?? ''} alt={user?.user?.name ?? ''}
+                    onClick={toProfile}/>
+                </Loading>
                 <DangerButton onClick={logout}>Logout</DangerButton>
             </div>
             { searchTerm.length == 0 ? <MainView/> : <SearchView searchTerm={searchTerm}/>}
         </div>
-        </PublicChatroomsContext.Provider>
-    </CurrentUserContext.Provider>
+    </PublicChatroomsContext.Provider>
 }
 
 export default App;

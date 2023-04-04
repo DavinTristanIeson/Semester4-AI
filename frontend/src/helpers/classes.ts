@@ -1,15 +1,20 @@
+import { STORAGE } from "./constants";
+
 export class UserAccount {
     readonly id:number;
-    username:string;
+    name:string;
     email:string;
     bio:string;
     pfp:string;
-    constructor(id:number, email:string, username:string, bio:string, pfp:string){
+    constructor(id:number, email:string, name:string, bio:string, pfp:string){
         this.id = id;
-        this.username = username;
+        this.name = name;
         this.email = email;
         this.bio = bio;
         this.pfp = pfp;
+    }
+    static fromJSON(json:any){
+        return new UserAccount(json.id, json.email, json.name, json.bio, STORAGE + json.pfp);
     }
 }
 
