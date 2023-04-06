@@ -18,6 +18,7 @@
 .horizontal-scroll>div {
     min-width: 400px;
 }
+
 .chat-options {
     width: 80%;
     position: absolute;
@@ -25,6 +26,7 @@
     left: 50%;
     transform: translate(-50%, -50%);
     z-index: 3;
+    animation: popup 0.3s;
 }
 .chat-options>div:nth-child(2){
     background-color: var(--grey);
@@ -33,6 +35,38 @@
 .chat-options>div:nth-child(2)>button:nth-child(1) {
     border-radius: 10px 10px 40px 10px;
 }
+
+.chatroom-list-item, .chatroom-box-item {
+    transition: transform 0.3s;
+}
+.chatroom-box-item {
+    transition: box-shadow 0.3s, filter 0.3s;
+}
 .chatroom-list-item img {
     width: 200px;
+}
+.chatroom-list-item:hover {
+    transform: translateX(0.5%);
+}
+.chatroom-box-item:hover {
+    transform: scale(102%);
+    box-shadow: 8px 8px 0px 5px rgba(0, 0, 0, 0.35);
+    filter: brightness(105%);
+}
+
+.profile-actions {
+    left: -30%;
+}
+.profile-actions .list-group-item:hover {
+    background-color: var(--primary);
+    color: white;
+    cursor: pointer;
+}
+
+.profile-action-icon {
+    transition: transform 0.2s, filter 0.2s;
+}
+.profile-action-icon:hover {
+    transform: scale(105%);
+    filter: brightness(105%);
 }

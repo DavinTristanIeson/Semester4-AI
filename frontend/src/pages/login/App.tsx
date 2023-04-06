@@ -1,7 +1,8 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { PrimaryButton } from "../../components/Buttons";
 import LoginForm from "./LoginForm";
 import RegisterForm from "./RegisterForm";
+import { motion } from "framer-motion";
 
 import "./login.css";
 
@@ -18,19 +19,21 @@ interface SlidingTextProps {
     isFacingRight: boolean
 }
 function SlidingText({isFacingRight}:SlidingTextProps){
-    return <div>
-        <div className={`sliding-text ${isFacingRight ? 'face-right' : 'face-left'}`}>
+    return <div className={`sliding-text ${isFacingRight ? 'face-right' : 'face-left'}`}>
         </div>
-    </div>
 }
 
 function SlidingTextAnimation(){
-    return <div className="col-5 mt-5 sliding-text-container d-none d-lg-block">
+    return <motion.div
+        initial={{translateY: 100, opacity: 0}}
+        animate={{translateY: 0, opacity: 1}}
+        transition={{duration: 0.6 }}
+        className="col-5 mt-5 sliding-text-container d-none d-lg-block">
         <SlidingText isFacingRight={true}/>
         <SlidingText isFacingRight={false}/>
         <SlidingText isFacingRight={true}/>
         <SlidingText isFacingRight={false}/>
-    </div>
+    </motion.div>
 }
 
 function FormLayout(){
@@ -38,7 +41,11 @@ function FormLayout(){
     function changeForm(){
         letLogin(login => !login);
     }
-    return <div className="bg-white mt-5 m-3 pt-4 px-3
+    return <motion.div
+        initial={{scale: 0.1, opacity: 0}}
+        animate={{scale: 1, opacity: 1}}
+        transition={{duration: 0.6}}
+        className="bg-white mt-5 m-3 pt-4 px-3
         position-relative very-rounded col-lg-6 col-8 notepad-shadow" style={{minHeight: "850px"}}>
         <div className="d-flex align-items-center justify-content-center mb-5">
             <div className="notepad-hole mx-2"></div>
@@ -60,7 +67,7 @@ function FormLayout(){
                 <p className="position-absolute bottom-0">Already have an account? <PrimaryButton onClick={changeForm}>Login</PrimaryButton> here!</p>
             </>
         }
-    </div>
+    </motion.div>
 }
 
 export default App;

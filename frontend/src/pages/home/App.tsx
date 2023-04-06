@@ -1,17 +1,19 @@
 import { useContext, useEffect, useState } from "react";
 import { CurrentUserContext, PageStateContext, PublicChatroomsContext } from "../../context";
-import { Chatroom, ChatroomInfo, UserAccount } from "../../helpers/classes";
-import { ChatroomItem, ChatroomJoinDetail, ChatroomListItem, CreateNewChatroom } from "./ChatroomItem";
-import { KeyboardEvent, FocusEvent } from "react";
+import { ChatroomInfo } from "../../helpers/classes";
+import { ChatroomItem, ChatroomListItem } from "./ChatroomItem";
 import "./home.css";
 import { MaybeImage } from "../../components/Image";
-import { DangerButton, PrimaryButton } from "../../components/Buttons";
+import { PrimaryButton } from "../../components/Buttons";
 import { useNavigate } from "react-router-dom";
 
 import Add from "../../assets/add.svg";
-import { API, CONNECTION_ERROR, SERVER_ERROR } from "../../helpers/constants";
+import { API } from "../../helpers/constants";
 import { Loading } from "../../components/Informative";
 import { useInformativeFetch } from "../../helpers/fetch";
+import { ChatroomJoinDetail, CreateNewChatroom } from "./ChatroomDetail";
+import { AnimatePresence, motion } from "framer-motion";
+
 
 function SearchView({searchTerm}:{searchTerm:string}){
     const [viewedChatroom, setViewedChatroom] = useState<ChatroomInfo|null>(null);
@@ -35,7 +37,13 @@ function SearchView({searchTerm}:{searchTerm:string}){
     }, [searchTerm]);
     
     return <>
-        {viewedChatroom && <ChatroomJoinDetail hasJoined={false} onClose={() => setViewedChatroom(null)} chatroom={viewedChatroom}/>}
+        <AnimatePresence>
+            {viewedChatroom && 
+            // Animate opacity saja, kalau animate transform nanti bentrok dengan transform punya modal
+            <motion.div initial={{opacity: 0}} animate={{opacity: 1}} exit={{opacity:0}}>
+                <ChatroomJoinDetail hasJoined={false} onClose={() => setViewedChatroom(null)} chatroom={viewedChatroom}/>
+            </motion.div>}
+        </AnimatePresence>
         <div className="vertical-scroll">
             {chatrooms.map(x => <ChatroomListItem chatroom={x} onOpen={setViewedChatroom}/>)}
         </div>
@@ -43,7 +51,7 @@ function SearchView({searchTerm}:{searchTerm:string}){
 }
 
 function NewChatroomButton({onClick}:{onClick:(e:React.MouseEvent<HTMLButtonElement>)=>void}){
-    return <PrimaryButton className="h-auto px-5" onClick={onClick}>
+    return <PrimaryButton className="h-auto px-5 thick-shadow chatroom-box-item" onClick={onClick}>
         <img src={Add} alt="Add New Chatroom"/>
     </PrimaryButton>
 }
@@ -57,11 +65,17 @@ function MainView(){
     }|null>(null);
     
     return <>
+        <AnimatePresence>
         {viewedChatroom && (
-            viewedChatroom.isNew ?
-            <CreateNewChatroom onClose={()=>setViewedChatroom(null)}/> :  
-            <ChatroomJoinDetail hasJoined={viewedChatroom.hasJoined} onClose={() => setViewedChatroom(null)} chatroom={viewedChatroom.room!}/>
+            <motion.div initial={{opacity: 0}} animate={{opacity: 1}} exit={{opacity:0}}>
+            {   
+                viewedChatroom.isNew ?
+                <CreateNewChatroom onClose={()=>setViewedChatroom(null)}/> :  
+                <ChatroomJoinDetail hasJoined={viewedChatroom.hasJoined} onClose={() => setViewedChatroom(null)} chatroom={viewedChatroom.room!}/>
+            }
+            </motion.div>
         )}
+        </AnimatePresence>
         <h2>My Chatrooms</h2>
         <div className="horizontal-scroll">
             <NewChatroomButton onClick={()=>setViewedChatroom({room: null, isNew: true, hasJoined: false})}/>
@@ -75,6 +89,50 @@ function MainView(){
     </>
 }
 
+function ProfileActions(){
+    const [profileActionsVariant, setProfileActionsVariant] = useState("hidden");
+    const user = useContext(CurrentUserContext);
+    const navigate = useNavigate();
+    const infoFetch = useInformativeFetch();
+    async function logout(){
+        try {
+            const res = await infoFetch(() => fetch(API + "/accounts/logout", {
+                method: "POST",
+                credentials: "include"
+            }));
+            if (res.ok){
+                user?.setUser(null);
+                navigate("/login", {replace: true});
+            }
+        } catch {}
+    }
+    function toProfile(){
+        navigate("/account");
+    }
+    
+    return <div className="position-relative ms-5">
+        <MaybeImage className="icon-circle profile-action-icon" src={user?.user?.pfp ?? ''} alt={user?.user?.name ?? ''}
+        onClick={() => setProfileActionsVariant(x => {
+            console.log(x);
+            if (x == "hidden") return "visible";
+            else return "hidden";
+        })}/>
+        {
+            <motion.ul
+            initial="hidden"
+            variants={{
+                visible: {scaleY: 1, height: 1},
+                hidden: {scaleY: 0, height: 0}
+            }}
+            animate={profileActionsVariant}
+            className="list-group position-absolute bg-white profile-actions">
+                <li className="list-group-item" onClick={toProfile}>Profile</li>
+                <li className="list-group-item" onClick={logout}>Logout</li>
+            </motion.ul>
+        }
+    </div>
+}
+
 function App(){
     const [searchTerm, setSearchTerm] = useState("");
     const [displayedSearchTerm, setDisplayedSearchTerm] = useState("");
@@ -82,6 +140,7 @@ function App(){
     const user = useContext(CurrentUserContext);
     const [myChatrooms, setMyChatrooms] = useState<ChatroomInfo[]>([]);
     const [publicChatrooms, setPublicChatrooms] = useState<ChatroomInfo[]>([]);
+    
     const pageState = useContext(PageStateContext);
     const chatrooms = {
         mine: myChatrooms,
@@ -89,62 +148,18 @@ function App(){
         setMine: setMyChatrooms,
         setPublic: setPublicChatrooms,
     };
+    const infoFetch = useInformativeFetch();
 
     useEffect(()=>{
-        pageState?.letLoading(true);
-        try {
-            fetch(API + "/chatroom/mine", {credentials: "include"})
-                .then(res => {
-                    if (res.ok) return res.json()
-                        .then(json => setMyChatrooms(ChatroomInfo.fromJSONArray(json)))
-                        .catch((e) => {
-                            console.error(e);
-                            pageState?.setErrMsg(SERVER_ERROR, 3000);
-                        });
-                    else pageState?.setErrMsg(SERVER_ERROR, 3000);
-                });
-            fetch(API + "/chatroom/public", {credentials: "include"})
-                .then(res => {
-                    if (res.ok) return res.json()
-                        .then(json => setPublicChatrooms(ChatroomInfo.fromJSONArray(json)))
-                        .catch((e) => {
-                            console.error(e);
-                            pageState?.setErrMsg(SERVER_ERROR, 3000);
-                        });
-                    else pageState?.setErrMsg(SERVER_ERROR, 3000);
-                });
-        } catch (e){
-            console.error(e);
-            pageState?.setErrMsg(CONNECTION_ERROR, 3000);
-        }
-        pageState?.letLoading(false);
+        infoFetch(() => fetch(API + "/chatroom/mine", {credentials: "include"}))
+            .then(res => res.json())
+            .then(json => setMyChatrooms(ChatroomInfo.fromJSONArray(json)))
+            .catch(() => {});
+        infoFetch(() => fetch(API + "/chatroom/public", {credentials: "include"}))
+            .then(res => res.json())
+            .then(json => setPublicChatrooms(ChatroomInfo.fromJSONArray(json)))
+            .catch(() => {});
     }, []);
-
-
-    const navigate = useNavigate();
-    async function logout(){
-        pageState?.letLoading(true);
-        try {
-            const res = await fetch(API + "/accounts/logout", {
-                method: "POST",
-                credentials: "include"
-            });
-            pageState?.letLoading(false);
-            if (res.ok){
-                user?.setUser(null);
-                navigate("/login", {replace: true});
-            } else {
-                pageState?.setErrMsg(SERVER_ERROR, 3000);
-            }
-        } catch (e){
-            console.error(e);
-            pageState?.letLoading(false);
-            pageState?.setErrMsg(CONNECTION_ERROR, 3000);
-        }
-    }
-    function toProfile(){
-        navigate("/account");
-    }
     
     return <PublicChatroomsContext.Provider value={chatrooms}>
         <div className="mx-5 mt-3">
@@ -159,10 +174,8 @@ function App(){
                 }}
                 onBlur={e => setSearchTerm(e.target.value)}/>
                 <Loading dependency={user?.user}>
-                    <MaybeImage className="icon-circle ms-5" src={user?.user?.pfp ?? ''} alt={user?.user?.name ?? ''}
-                    onClick={toProfile}/>
+                    <ProfileActions/>
                 </Loading>
-                <DangerButton onClick={logout}>Logout</DangerButton>
             </div>
             { searchTerm.length == 0 ? <MainView/> : <SearchView searchTerm={searchTerm}/>}
         </div>

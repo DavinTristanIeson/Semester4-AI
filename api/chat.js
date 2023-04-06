@@ -84,7 +84,7 @@ router.delete("/:id", auth, isChatroomOwner, async (req, res, next)=>{
         const prev = await db.get("SELECT * FROM rooms WHERE id = ?", [roomid]);
         await db.run("DELETE FROM rooms WHERE id = ?", [roomid]);
         res.status(200).end();
-        const oldFile = "../storage/" + prev.thumbnail;
+        const oldFile = "./storage/" + prev.thumbnail;
         if (await fs.access(oldFile).then(()=>true).catch(()=>false)){
             await fs.unlink(oldFile);
         }

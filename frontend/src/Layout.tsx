@@ -1,14 +1,17 @@
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import { ErrorAlert, Spinner } from "./components/Informative";
 import { useEffect, useRef, useState } from "react";
 import { CurrentUserContext, PageStateContext } from "./context";
 import { UserAccount } from "./helpers/classes";
-import { API, SERVER_ERROR } from "./helpers/constants";
+import { API } from "./helpers/constants";
+import { motion } from "framer-motion";
+
 
 function Layout(){
     const [isLoading, letLoading] = useState(false);
     const [errMsg, setErrMsg] = useState("");
     const timeoutID = useRef(-1);
+    const {pathname} = useLocation();
     const messageHandler = (message:string, timeout:number|null) => {
         setErrMsg(message);
         if (timeout === null) return;
@@ -38,7 +41,12 @@ function Layout(){
         <CurrentUserContext.Provider value={{user, setUser}}>
         {isLoading && <Spinner/>}
         {errMsg.length > 0 && <ErrorAlert message={errMsg} isFloating={true}/>}
-        <Outlet/>
+        <motion.div
+        key={pathname}
+        initial={{opacity: 0, scale: 0.95}}
+        animate={{opacity: 1, scale: 1}}>
+            <Outlet/>
+        </motion.div>
         </CurrentUserContext.Provider>
     </PageStateContext.Provider>
     </>

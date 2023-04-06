@@ -142,7 +142,7 @@ function ChatMessages(){
         {
             hasNewMessage && 
             <div className="alert alert-highlight alert-dismissible">
-                <strong>Ada pesan baru! </strong>
+                <strong>There's a new message! </strong>
                 <a onClick={(e)=>{
                     e.preventDefault();
                     letNewMessage(false);

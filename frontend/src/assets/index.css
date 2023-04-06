@@ -190,3 +190,7 @@ input:not([type=submit], [type=checkbox], [type=radio], [type=file]):focus, text
   text-align: center;
   z-index: 14;
 }
+
+.icon-circle {
+  background-image: linear-gradient(var(--primary), var(--secondary));
+}
