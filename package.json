@@ -3,6 +3,7 @@
 	"version": "1.0.0",
 	"main": "index.js",
 	"devDependencies": {
+		"@tensorflow-models/toxicity": "^1.2.2",
 		"bcrypt": "^5.1.0",
 		"connect-sqlite3": "^0.9.13",
 		"cors": "^2.8.5",
@@ -12,7 +13,8 @@
 		"sqlite3": "^5.1.4"
 	},
 	"scripts": {
-		"dev": "node index"
+		"dev": "node index",
+		"reset": "python reset.py"
 	},
 	"keywords": [],
 	"contributors": [
@@ -23,5 +25,9 @@
 		"Vincent Tandera"
 	],
 	"license": "ISC",
-	"description": "Projek Universitas Mikroskil untuk mata kuliah Kecerdasan Buatan semester 4"
+	"description": "Projek Universitas Mikroskil untuk mata kuliah Kecerdasan Buatan semester 4",
+	"dependencies": {
+		"@tensorflow/tfjs-node": "^4.2.0",
+		"multer": "1.4.5-lts.1"
+	}
 }
