@@ -8,12 +8,15 @@ const {
   doesChatroomExist,
   isChatroomOwner,
   createChatroomInfoObject,
+  createMessageObject,
 } = require("./middleware");
 const upload = require("./pfp");
 const fs = require("fs/promises");
+const { dispatch } = require("./io");
 
 const CHATROOM_QUERY = `SELECT rooms.id AS room_id, rooms.*, users.id AS owner_id, users.email AS owner_email, users.name AS owner_name, users.bio AS owner_bio, users.pfp_path AS owner_pfp FROM rooms JOIN users ON rooms.owner_id = users.id`;
 const CHATROOM_MEMBERS_QUERY = `SELECT * FROM user_rooms JOIN users ON user_rooms.user_id = users.id WHERE room_id = ?`;
+const CHATROOM_MESSAGES_QUERY = `SELECT messages.*, users.id AS owner_id, users.email AS owner_email, users.name AS owner_name, users.bio AS owner_bio, users.pfp_path AS owner_pfp FROM messages JOIN users ON messages.user_id = users.id`;
 
 router.get("/mine", auth, async (req, res, next) => {
   const MEMBER_HAS_JOINED =
@@ -230,25 +233,24 @@ router.post("/", upload.single("thumbnail"), auth, async (req, res, next) => {
 router.post("/:id/messages", auth, hasUserJoined, async (req, res) => {
   const { id } = req.params;
   const { message } = req.body;
-  const name = req.session.user.name;
 
   try {
     // Menyimpan pesan ke dalam database
     const createdAt = new Date().toISOString(); // Mendapatkan waktu saat ini
-    await db.run(
-      "INSERT INTO messages (roomId, text, name, createdAt) VALUES (?, ?, ?, ?)",
-      [id, message, name, createdAt]
+    const {lastID} = await db.run(
+      "INSERT INTO messages (room_id, user_id, text, created_at) VALUES (?, ?, ?, ?)",
+      [id, req.session.user.id, message, createdAt]
     );
+    const msgRaw = await db.get(CHATROOM_MESSAGES_QUERY + " WHERE messages.id = ?", [lastID]);
+    if (!msgRaw){
+      res.status(500).end();
+      return;
+    }
+    const msg = createMessageObject(msgRaw);
 
     // Mengirimkan event 'sendMessage' ke semua anggota chatroom menggunakan socket.io
-    io.to(id).emit("sendMessage", {
-      roomId: id,
-      message: message,
-      name: name,
-      createdAt: createdAt,
-    });
-
-    res.status(200).send("Pesan berhasil dikirim");
+    dispatch(io => io.to(id).emit("sendMessage", msg));
+    res.status(200).json(msg);
   } catch (err) {
     console.error(err);
     res.status(500).send("Terjadi kesalahan saat mengirimkan pesan");
@@ -258,14 +260,19 @@ router.post("/:id/messages", auth, hasUserJoined, async (req, res) => {
 // Route untuk mengambil pesan sebelumnya dari chatroom
 router.get("/:id/messages", auth, hasUserJoined, async (req, res) => {
   const { id } = req.params;
-  const { limit, offset } = req.query;
+  const limit = parseInt(req.query.limit);
+  const offset = parseInt(req.query.offset);
+  if (isNaN(limit) || isNaN(offset)){
+    res.status(400).json({message: "Limit dan offset harus merupakan angka"});
+    return;
+  }
 
   try {
     // Mengambil pesan sebelumnya dari database
-    const query = `SELECT * FROM messages WHERE roomId = ? ORDER BY createdAt ASC LIMIT ? OFFSET ?`;
+    const query = CHATROOM_MESSAGES_QUERY + ` WHERE messages.room_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?`;
     const messages = await db.all(query, [id, limit, offset]);
 
-    res.json(messages);
+    res.status(200).json(messages.map(x => createMessageObject(x)));
   } catch (err) {
     console.error(err);
     res.status(500).send("Terjadi kesalahan saat mengambil pesan");

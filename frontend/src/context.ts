@@ -1,5 +1,6 @@
 import { createContext } from "react";
 import { Chatroom, ChatroomInfo, UserAccount } from "./helpers/classes";
+import { Socket } from "socket.io-client";
 
 export const CurrentUserContext = createContext<{
     user:UserAccount|null,
@@ -23,3 +24,5 @@ export const PageStateContext = createContext<{
     setErrMsg: (message:string, timeout:number|null) => void,
     cleanup: () => void,
 }|undefined>(undefined);
+
+export const ChatSocketContext = createContext<Socket|null>(null);

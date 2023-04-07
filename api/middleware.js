@@ -1,5 +1,14 @@
 const db = require("./db");
 
+function createOwnerObject(owner){
+  return {
+    id: owner.owner_id,
+    email: owner.owner_email,
+    name: owner.owner_name,
+    bio: owner.owner_bio,
+    pfp: owner.owner_pfp,
+  }
+}
 module.exports = {
   auth(req, res, next) {
     if (req.session.user) next();
@@ -26,15 +35,10 @@ module.exports = {
     return {id: user.id, email: user.email, name: user.name, bio: user.bio, pfp: user.pfp_path};
   },
   createChatroomInfoObject(chatroom){
+    const owner = createOwnerObject(chatroom);
     return {
       id: chatroom.room_id,
-      owner: {
-        id: chatroom.owner_id,
-        email: chatroom.owner_email,
-        name: chatroom.owner_name,
-        bio: chatroom.owner_bio,
-        pfp: chatroom.owner_pfp,
-      },
+      owner,
       settings: {
         title: chatroom.title,
         thumbnail: chatroom.thumbnail,
@@ -46,15 +50,10 @@ module.exports = {
   },
   createChatroomObject(chatroom, members){
     const users = members.map(user => ({id: user.id, email: user.email, name: user.name, bio: user.bio, pfp: user.pfp_path}));
+    const owner = createOwnerObject(chatroom)
     return {
         id: chatroom.room_id,
-        owner: {
-          id: chatroom.owner_id,
-          email: chatroom.owner_email,
-          name: chatroom.owner_name,
-          bio: chatroom.owner_bio,
-          pfp: chatroom.owner_pfp,
-        },
+        owner,
         members: users,
         settings: {
           title: chatroom.title,
@@ -63,6 +62,14 @@ module.exports = {
           isToxicityFiltered: !!chatroom.is_filtered,
           isPublic: !!chatroom.is_public,
         }
+    }
+  },
+  createMessageObject(message){
+    return {
+      id: message.id,
+      user: createOwnerObject(message),
+      message: message.text,
+      time: message.created_at,
     }
   }
 };

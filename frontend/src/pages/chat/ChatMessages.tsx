@@ -1,7 +1,10 @@
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { Message, UserAccount } from "../../helpers/classes";
 import { MemberIcon } from "./ChatMembers";
-import { ChatroomContext, CurrentUserContext } from "../../context";
+import { ChatSocketContext, ChatroomContext, CurrentUserContext } from "../../context";
+import { API } from "../../helpers/constants";
+import { useInformativeFetch } from "../../helpers/fetch";
+
 
 interface RequireMessage {
     message:Message
@@ -21,7 +24,7 @@ function ChatMessage({message}:RequireMessage){
 }
 
 interface ChatInputProps {
-    addMessage(msg:Message):void;
+    addMessage(msg:string):void;
 }
 function ChatInput({addMessage}:ChatInputProps){
     const [input, setInput] = useState("");
@@ -32,7 +35,7 @@ function ChatInput({addMessage}:ChatInputProps){
     function detectEnter(e:React.KeyboardEvent<HTMLTextAreaElement>){
         if (e.key != "Enter") return;
         else if (e.shiftKey) return;
-        addMessage(new Message(Math.random(), currentUser?.user!, input, new Date()));
+        addMessage(input);
         setInput("");
         e.preventDefault();
         // TODO: send message
@@ -42,8 +45,18 @@ function ChatInput({addMessage}:ChatInputProps){
 }
 
 function useInfiniteScrolling(){
+    const infoFetch = useInformativeFetch();
+    const chatroom = useContext(ChatroomContext);
     async function loader(limit:number, offset:number){
-        return Array.from({length: limit}, (_, i) => i+1+offset).map(x => new Message(Math.random(), new UserAccount(Math.random(), "davin@email.com", "DavinTristan", "Nama saya Davin", "none"), Math.random().toString(), new Date()));
+        if (!chatroom || !chatroom.room) return [];
+        try {
+            const res = await infoFetch(() => fetch(`${API}/chatroom/${chatroom.room!.id}/messages?limit=${limit}&offset=${offset}`, {
+                credentials: "include"
+            }));
+            return (await res.json()).map((x:any) => Message.fromJSON(x));
+        } catch {
+            return [];
+        }
     }
     const [messages, setMessages] = useState<Message[]>([]);
     const [hasNewMessage, letNewMessage] = useState(false);
@@ -52,6 +65,7 @@ function useInfiniteScrolling(){
     const top = useRef<HTMLHRElement>(null);
     const scrollRef = useRef<HTMLDivElement|null>(null);
     const alreadyObserved = useRef<{top: boolean, bottom: boolean}>({top: false, bottom: true});
+    const justHadLoadedNewMessages = useRef(false);
 
     const MAX_ITEMS = 20;
     const LOAD_SIZE = 10;
@@ -68,11 +82,10 @@ function useInfiniteScrolling(){
             if (entry.target == top.current && !alreadyObserved.current.top){
                 alreadyObserved.current.top = true;
                 const newData = await loader(LOAD_SIZE, messages.length);
+                if (newData.length == 0) return;
                 setMessages(msg => [...newData, ...msg]);
 
-                // Push ke bawah
-                if (!scrollRef.current) return;
-                scrollRef.current.scrollTop = scrollRef.current.scrollHeight * (LOAD_SIZE / (messages.length || 1));
+                justHadLoadedNewMessages.current = true;
             } else if (entry.target == bottom.current && !alreadyObserved.current.bottom){
                 alreadyObserved.current.bottom = true;
                 // Reduce size
@@ -108,8 +121,15 @@ function useInfiniteScrolling(){
     }, []);
 
     useEffect(()=>{
-        if (!scrollRef.current) return cleanupObserver;
-        createObserver(scrollRef.current);
+        if (scrollRef.current){
+            createObserver(scrollRef.current);
+            if (justHadLoadedNewMessages.current) {
+                justHadLoadedNewMessages.current = false;
+                console.log(messages.length, LOAD_SIZE/(messages.length));
+                scrollRef.current.scrollTop = scrollRef.current.scrollHeight * (LOAD_SIZE / (messages.length));
+            }
+        }
+
         return cleanupObserver;
     }, [messages]);
     
@@ -122,12 +142,40 @@ function useInfiniteScrolling(){
 
 function ChatMessages(){
     const chatroom = useContext(ChatroomContext);
+    const socket = useContext(ChatSocketContext);
+    const infoFetch = useInformativeFetch();
     const {messages, setMessages, hasNewMessage, letNewMessage, bottom, top, scrollContainer, scrollRef,} = useInfiniteScrolling();
+    const justSentNewMessage = useRef(false);
 
-    function addItem(newMsg:Message){
-        setMessages(msg => [...msg, newMsg]);
-        letNewMessage(true);
+    async function addItem(message:string){
+        try {
+            const res = await infoFetch(() => fetch(`${API}/chatroom/${chatroom!.room!.id}/messages`, {
+                method: "POST",
+                headers: {
+                    'Content-Type': "application/json"
+                },
+                body: JSON.stringify({message}),
+                credentials: "include",
+            }));
+            const msg = Message.fromJSON(await res.json());
+            if (res.ok){
+                setMessages(msgs => [...msgs, msg]);
+                letNewMessage(false);
+                justSentNewMessage.current = true;
+            }
+        } catch {}
     }
+    useEffect(() => {
+        if (!scrollRef.current || !justSentNewMessage.current) return;
+        console.log("hi");
+        scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+        justSentNewMessage.current = false;
+    }, [messages]);
+
+    socket?.on("sendMessage", (msg) => {
+        setMessages(msgs => [...msgs, Message.fromJSON(msg)]);
+        letNewMessage(true);
+    });
 
     return <div className="col-9 chat-messages-list bg-white me-2 p-3 position-relative">
         <h2 className="text-center">{chatroom?.room?.settings.title}</h2>

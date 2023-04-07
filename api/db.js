@@ -31,11 +31,12 @@ async function main(db) {
   )`);
   await db.run(`CREATE TABLE IF NOT EXISTS messages (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    roomId INTEGER NOT NULL,
+    room_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
     text TEXT NOT NULL,
-    name TEXT NOT NULL,
-    createdAt TEXT NOT NULL,
-    FOREIGN KEY (roomId) REFERENCES rooms (id) ON UPDATE CASCADE ON DELETE CASCADE
+    created_at TEXT NOT NULL,
+    FOREIGN KEY (room_id) REFERENCES rooms (id) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users (id) ON UPDATE CASCADE ON DELETE CASCADE
   )`);
 }
 

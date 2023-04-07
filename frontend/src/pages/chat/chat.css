@@ -11,6 +11,7 @@
 }
 .chat-messages-list {
     border-radius: 40px 10px 10px 40px;
+    padding-bottom: 10%;
 }
 .member-info {
     padding-left: calc(2rem + 48px);
@@ -41,6 +42,10 @@
     min-height: 40px;
     border-radius: 10px 10px 10px 40px;
     padding-left: 40px;
+    position: absolute;
+    bottom: 0%;
+    margin-bottom: 20px;
+    width: 90%;
 }
 .chat-options {
     width: 80%;
