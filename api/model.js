@@ -82,6 +82,11 @@ class ToxicityDetectionModel {
 
 const CONFIDENCE = 0.9;
 let model;
+/**
+ * Loads the model asynchronously. It will take a long time for the initial load, but after the model has been loaded
+ * it will simply return the previously loaded model.
+ * @returns {ToxicityDetectionModel}
+ */
 async function loadModel(){
     if (model) return model;
     model = await ToxicityDetectionModel.load(CONFIDENCE);

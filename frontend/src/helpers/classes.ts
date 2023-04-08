@@ -23,6 +23,7 @@ export class Message {
     user:UserAccount;
     message:string;
     time:Date;
+    type:string = "user"
     constructor(id:number, user:UserAccount, message:string, time:Date){
         this.id = id;
         this.user = user;
@@ -36,7 +37,15 @@ export class Message {
         return new Message(json.id, UserAccount.fromJSON(json.user), json.message, new Date(json.time));
     }
 }
-
+export class EphemeralMessage extends Message {
+    type = "ephemeral"
+    constructor(user:UserAccount, message:string){
+        super(Math.random(), user, message, new Date()); 
+    }
+    static isEphemeral(message:Message): message is EphemeralMessage {
+        return message.type == "ephemeral";
+    }
+}
 
 export interface ChatroomSettings {
     title:string;

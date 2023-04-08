@@ -22,13 +22,13 @@ function initialize(httpServer, options, sessionMiddleware) {
     // Event listener saat user bergabung ke sebuah chatroom
     socket.on("joinRoom", (roomId) => {
       socket.join(roomId);
-      console.log(`User ${socket.request.session.user.id} bergabung ke chatroom: ${roomId}`);
+      console.log(`SOCKET: User ${socket.request.session.user.id} (${socket.id}) bergabung ke chatroom: ${roomId}`);
     });
     
     // Event listener saat user meninggalkan chatroom
     socket.on("leaveRoom", (roomId) => {
       socket.leave(roomId);
-      console.log(`User ${socket.request.session.user.id} meninggalkan chatroom: ${roomId}`);
+      console.log(`SOCKET: User ${socket.request.session.user.id} (${socket.id}) meninggalkan chatroom: ${roomId}`);
     });
   });
 }

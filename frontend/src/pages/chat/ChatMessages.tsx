@@ -1,8 +1,8 @@
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
-import { Message, UserAccount } from "../../helpers/classes";
+import { EphemeralMessage, Message, UserAccount } from "../../helpers/classes";
 import { MemberIcon } from "./ChatMembers";
-import { ChatSocketContext, ChatroomContext, CurrentUserContext } from "../../context";
-import { API } from "../../helpers/constants";
+import { ChatSocketContext, ChatroomContext, CurrentUserContext, PageStateContext } from "../../context";
+import { API, CONNECTION_ERROR, SERVER_ERROR } from "../../helpers/constants";
 import { useInformativeFetch } from "../../helpers/fetch";
 
 
@@ -11,7 +11,7 @@ interface RequireMessage {
 }
 function ChatMessage({message}:RequireMessage){
     const currentUser = useContext(CurrentUserContext);
-    return <div className={`chat-message my-2 py-2 ps-3 ${(currentUser?.user?.id == message.user.id ? "bg-highlight-dark" : "bg-highlight")}`}>
+    return <div className={`chat-message my-2 py-2 ps-3 ${(EphemeralMessage.isEphemeral(message) ? "bg-highlight-dark" : "bg-highlight")}`}>
         <div className="d-flex align-items-center justify-content-between me-3">
             <div className="d-flex align-items-center">
                 <MemberIcon user={message.user}/>
@@ -19,7 +19,11 @@ function ChatMessage({message}:RequireMessage){
             </div>
             <p className="fw-light">{message.waktu}</p>
         </div>
-        {message.message}
+        <div>
+        {
+            (EphemeralMessage.isEphemeral(message) && <i>{message.message}</i>) || message.message
+        }
+        </div>
     </div>
 }
 
@@ -28,7 +32,6 @@ interface ChatInputProps {
 }
 function ChatInput({addMessage}:ChatInputProps){
     const [input, setInput] = useState("");
-    const currentUser = useContext(CurrentUserContext);
     function onChange(e:React.ChangeEvent<HTMLTextAreaElement>){
         setInput(e.target.value);
     }
@@ -155,27 +158,41 @@ function useInfiniteScrolling(){
 function ChatMessages(){
     const chatroom = useContext(ChatroomContext);
     const socket = useContext(ChatSocketContext);
-    const infoFetch = useInformativeFetch();
+    const pageState = useContext(PageStateContext);
+    const user = useContext(CurrentUserContext);
     const {messages, setMessages, hasNewMessage, letNewMessage, bottom, top, scrollContainer, scrollRef,} = useInfiniteScrolling();
     const justSentNewMessage = useRef(false);
 
     async function addItem(message:string){
         try {
-            const res = await infoFetch(() => fetch(`${API}/chatroom/${chatroom!.room!.id}/messages`, {
+            pageState?.letLoading(true);
+            const res = await fetch(`${API}/chatroom/${chatroom!.room!.id}/messages`, {
                 method: "POST",
                 headers: {
                     'Content-Type': "application/json"
                 },
                 body: JSON.stringify({message}),
                 credentials: "include",
-            }));
-            const msg = Message.fromJSON(await res.json());
+            });
+            pageState?.letLoading(false);
             if (res.ok){
+                const msg = Message.fromJSON(await res.json());
                 setMessages(msgs => [...msgs, msg]);
                 letNewMessage(false);
                 justSentNewMessage.current = true;
+            } else if (res.status == 403){
+                const {categories} = await res.json();
+                setMessages(msgs => [...msgs, new EphemeralMessage(
+                    user?.user!,
+                    `This message has been filtered due to the following reasons: ${categories.join(', ')}`,
+                )]);
+            } else {
+                pageState?.setErrMsg(SERVER_ERROR, 3000);
             }
-        } catch {}
+        } catch {
+            pageState?.letLoading(false);
+            pageState?.setErrMsg(CONNECTION_ERROR, 3000);
+        }
     }
     useEffect(() => {
         if (!scrollRef.current || !justSentNewMessage.current) return;

@@ -242,10 +242,13 @@ router.post("/:id/messages", auth, hasUserJoined, async (req, res) => {
     const isFiltered = room.is_filtered == 1 ? true : false;
     if (isFiltered) {
       const model = await loadModel();
-      const isToxic = await model.isToxic(message);
+      const toxicCategories = await model.whatToxic(message);
 
-      if (isToxic) {
-        return res.status(403).send("Pesan mengandung kata-kata toksik");
+      if (toxicCategories.length > 0) {
+        return res.status(403).json({
+          message: "Pesan mengandung kata-kata toksik",
+          categories: toxicCategories
+        });
       }
     }
 

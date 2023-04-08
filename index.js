@@ -7,6 +7,7 @@ const ChatRouter = require("./api/chat");
 const { auth } = require("./api/middleware");
 const fs = require("fs/promises");
 const { initialize } = require("./api/io.js");
+const { loadModel } = require("./api/model");
 
 fs.exists = function (fp) {
   return this.access(fp)
@@ -17,6 +18,9 @@ fs.exists = function (fp) {
   if (!(await fs.exists("./storage"))) {
     fs.mkdir("./storage");
   }
+  console.log("INFO: Loading toxicity model...");
+  await loadModel();
+  console.log("INFO: Model loaded!");
 })();
 
 const cors = require("cors");
@@ -72,7 +76,7 @@ app.use((err, req, res, next) => {
 app.get("/", (req, res) => {});
 
 const server = app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
+  console.log(`INFO: Server running at http://localhost:${PORT}`);
 });
 initialize(
   server,
