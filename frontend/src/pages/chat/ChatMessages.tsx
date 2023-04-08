@@ -45,12 +45,19 @@ function ChatInput({addMessage}:ChatInputProps){
 }
 
 function useInfiniteScrolling(){
+    // Black magic, do not touch
+
     const infoFetch = useInformativeFetch();
     const chatroom = useContext(ChatroomContext);
-    async function loader(limit:number, offset:number){
+
+    const [messages, setMessages] = useState<Message[]>([]);
+    const [hasNewMessage, letNewMessage] = useState(false);
+    async function loader(limit:number, offset?:number): Promise<Message[]> {
         if (!chatroom || !chatroom.room) return [];
         try {
-            const res = await infoFetch(() => fetch(`${API}/chatroom/${chatroom.room!.id}/messages?limit=${limit}&offset=${offset}`, {
+            let query = `${API}/chatroom/${chatroom.room!.id}/messages?limit=${limit}`;
+            if (offset !== undefined) query += `&offset=${offset}`;
+            const res = await infoFetch(() => fetch(query, {
                 credentials: "include"
             }));
             return (await res.json()).map((x:any) => Message.fromJSON(x));
@@ -58,21 +65,23 @@ function useInfiniteScrolling(){
             return [];
         }
     }
-    const [messages, setMessages] = useState<Message[]>([]);
-    const [hasNewMessage, letNewMessage] = useState(false);
 
+    // Elemen HR utk trigger resize/load
     const bottom = useRef<HTMLHRElement>(null);
     const top = useRef<HTMLHRElement>(null);
+
+    // scroll container
     const scrollRef = useRef<HTMLDivElement|null>(null);
+    // agar mencegah observe terus bottom/top berulang-ulang
     const alreadyObserved = useRef<{top: boolean, bottom: boolean}>({top: false, bottom: true});
-    const justHadLoadedNewMessages = useRef(false);
 
-    const MAX_ITEMS = 20;
-    const LOAD_SIZE = 10;
+    // simpan jumlah message yang terload, untuk menentukan seberapa scroll ke bawah
+    const justHadLoadedNewMessages = useRef(0);
 
-    // Aku ga tahu ini useCallback semua bgmn bisa bekerja, tapi yg penting sudah bisa bekerja
-    // Ga mau pikirin lagi, ampun state management utk infinite scrolling
-    const onObserved = useCallback(async (entries:IntersectionObserverEntry[], observer:IntersectionObserver)=>{
+    const MAX_ITEMS = 40;
+    const LOAD_SIZE = 40;
+
+    const onObserved = async (entries:IntersectionObserverEntry[], observer:IntersectionObserver)=>{
         for (let entry of entries){
             if (!entry.isIntersecting){
                 if (entry.target == top.current)  alreadyObserved.current.top = false;
@@ -81,11 +90,13 @@ function useInfiniteScrolling(){
             }
             if (entry.target == top.current && !alreadyObserved.current.top){
                 alreadyObserved.current.top = true;
-                const newData = await loader(LOAD_SIZE, messages.length);
+                const newData = await loader(LOAD_SIZE, messages[0].id);
                 if (newData.length == 0) return;
-                setMessages(msg => [...newData, ...msg]);
+                setMessages(msg => {
+                    return [...newData, ...msg]
+                });
 
-                justHadLoadedNewMessages.current = true;
+                justHadLoadedNewMessages.current = newData.length;
             } else if (entry.target == bottom.current && !alreadyObserved.current.bottom){
                 alreadyObserved.current.bottom = true;
                 // Reduce size
@@ -96,9 +107,10 @@ function useInfiniteScrolling(){
                 letNewMessage(false);
             }
         }
-    }, [messages]);
+    }
     const observer = useRef<IntersectionObserver|null>(null);
 
+    // Aku tidak tahu kenapa harus begini, kelupaan alasannya
     const cleanupObserver = useCallback(()=>{
         if (observer.current){
             top.current && observer.current.unobserve(top.current);
@@ -124,17 +136,17 @@ function useInfiniteScrolling(){
         if (scrollRef.current){
             createObserver(scrollRef.current);
             if (justHadLoadedNewMessages.current) {
-                justHadLoadedNewMessages.current = false;
-                console.log(messages.length, LOAD_SIZE/(messages.length));
-                scrollRef.current.scrollTop = scrollRef.current.scrollHeight * (LOAD_SIZE / (messages.length));
+                // Scroll down ke bawah agar tidak langsung bawa ke paling atas, biar bisa baca message yang terload
+                scrollRef.current.scrollTop = scrollRef.current.scrollHeight * (justHadLoadedNewMessages.current / (messages.length));
+                justHadLoadedNewMessages.current = 0;
             }
         }
-
         return cleanupObserver;
     }, [messages]);
     
     useEffect(()=>{
-        loader(10, 0).then(setMessages);
+        // load initial data
+        loader(LOAD_SIZE).then(setMessages);
     }, []);
 
     return {messages, setMessages, hasNewMessage, letNewMessage, bottom, top, scrollContainer, scrollRef};

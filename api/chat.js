@@ -262,15 +262,24 @@ router.get("/:id/messages", auth, hasUserJoined, async (req, res) => {
   const { id } = req.params;
   const limit = parseInt(req.query.limit);
   const offset = parseInt(req.query.offset);
-  if (isNaN(limit) || isNaN(offset)){
-    res.status(400).json({message: "Limit dan offset harus merupakan angka"});
+  if (isNaN(limit)){
+    res.status(400).json({message: "Limit harus merupakan angka"});
     return;
   }
 
   try {
+    let query = CHATROOM_MESSAGES_QUERY + ` WHERE messages.room_id = ?`;
+    let params = [id];
+    if (!isNaN(offset)){
+      query += " AND messages.id < ?";
+      params.push(offset);
+    }
+    query += "ORDER BY messages.id DESC LIMIT ?"
+    params.push(limit);
+    
     // Mengambil pesan sebelumnya dari database
-    const query = CHATROOM_MESSAGES_QUERY + ` WHERE messages.room_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?`;
-    const messages = await db.all(query, [id, limit, offset]);
+    const messages = await db.all(query, params);
+    messages.reverse();
 
     res.status(200).json(messages.map(x => createMessageObject(x)));
   } catch (err) {
