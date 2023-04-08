@@ -13,6 +13,7 @@ const {
 const upload = require("./pfp");
 const fs = require("fs/promises");
 const { dispatch } = require("./io");
+const { loadModel } = require("./model");
 
 const CHATROOM_QUERY = `SELECT rooms.id AS room_id, rooms.*, users.id AS owner_id, users.email AS owner_email, users.name AS owner_name, users.bio AS owner_bio, users.pfp_path AS owner_pfp FROM rooms JOIN users ON rooms.owner_id = users.id`;
 const CHATROOM_MEMBERS_QUERY = `SELECT * FROM user_rooms JOIN users ON user_rooms.user_id = users.id WHERE room_id = ?`;
@@ -235,8 +236,21 @@ router.post("/:id/messages", auth, hasUserJoined, async (req, res) => {
   const { message } = req.body;
 
   try {
-    // Menyimpan pesan ke dalam database
+    const room = await db.get("SELECT is_filtered FROM rooms WHERE id = ?", [
+      id,
+    ]);
+    const isFiltered = room.is_filtered == 1 ? true : false;
+    if (isFiltered) {
+      const model = await loadModel();
+      const isToxic = await model.isToxic(message);
+
+      if (isToxic) {
+        return res.status(403).send("Pesan mengandung kata-kata toksik");
+      }
+    }
+
     const createdAt = new Date().toISOString(); // Mendapatkan waktu saat ini
+    // Menyimpan pesan ke dalam database
     const {lastID} = await db.run(
       "INSERT INTO messages (room_id, user_id, text, created_at) VALUES (?, ?, ?, ?)",
       [id, req.session.user.id, message, createdAt]
@@ -253,7 +267,9 @@ router.post("/:id/messages", auth, hasUserJoined, async (req, res) => {
     res.status(200).json(msg);
   } catch (err) {
     console.error(err);
-    res.status(500).send("Terjadi kesalahan saat mengirimkan pesan");
+    return res
+      .status(500)
+      .json({ message: "Terjadi kesalahan saat mengirimkan pesan" });
   }
 });
 
@@ -276,7 +292,7 @@ router.get("/:id/messages", auth, hasUserJoined, async (req, res) => {
     }
     query += "ORDER BY messages.id DESC LIMIT ?"
     params.push(limit);
-    
+
     // Mengambil pesan sebelumnya dari database
     const messages = await db.all(query, params);
     messages.reverse();
