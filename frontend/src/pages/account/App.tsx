@@ -11,6 +11,7 @@ import { CurrentUserContext } from '../../context';
 import { useInformativeFetch } from "../../helpers/fetch";
 import { Loading } from '../../components/Informative';
 import { DangerButton } from "../../components/Buttons";
+import { MaybeImage } from '../../components/Image';
 
 function App() {
     const user = useContext(CurrentUserContext);
@@ -23,6 +24,7 @@ function App() {
         const fetchChatrooms = async () => {
             try {
                 const response = await infoFetch(() => fetch(API + "/chatroom/mine", { credentials: "include" }));
+                if (!response.ok) return;
                 const json = await response.json();
                 const colors = json.map(() => `#${Math.floor(Math.random() * 16777215).toString(16)}`);
                 setRoomColors(colors);
@@ -56,7 +58,7 @@ function App() {
                 </div>
                 <div className="profileImage">
                     <div className="pic">
-                        <img src={user?.user?.pfp} alt="Profile" />
+                        <MaybeImage src={user?.user?.pfp!} alt="Profile" />
                     </div>
                 </div>
                 <div className="description">
@@ -71,12 +73,12 @@ function App() {
                         </div>
                         <div className="roomItem">
                             {myChatrooms.map((room, index) => (
-                                <RoomInfo key={room.id} name={room.settings.title} color={roomColors[index]} />
+                                <RoomInfo key={room.id} room={room} color={roomColors[index]} />
                             ))}
                         </div>
                     </div>
                 </div>
-                <DangerButton onClick={deleteAccount} className="w-25">
+                <DangerButton onClick={deleteAccount} className="ms-4 w-25">
                     Delete This Account
                 </DangerButton>
             </Loading>

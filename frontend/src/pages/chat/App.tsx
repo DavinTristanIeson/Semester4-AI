@@ -12,6 +12,7 @@ import { useInformativeFetch } from '../../helpers/fetch';
 import { API, BACKEND } from '../../helpers/constants';
 import { Loading } from '../../components/Informative';
 import { io, Socket } from "socket.io-client";
+import { AnimatePresence, motion } from 'framer-motion';
 
 function App(){
     const { id } = useParams();
@@ -38,6 +39,7 @@ function App(){
         return () => {
             if (!chatroom) return;
             socket?.emit("leaveRoom", chatroom.id);
+            socket?.close();
         }
     }, []);
 
@@ -51,7 +53,12 @@ function App(){
                     <ChatMembers onOpenSettings={()=>letOptionsOpen(true)}/>
                 </div>
             </Loading>
-            {isOptionsOpen && <ChatOptions onClose={()=>letOptionsOpen(false)}/>}
+            <AnimatePresence>
+                {isOptionsOpen &&
+                <motion.div initial={{opacity: 0}} animate={{opacity: 1}} exit={{opacity:0}}>
+                    <ChatOptions onClose={()=>letOptionsOpen(false)}/>
+                </motion.div>}
+            </AnimatePresence>
         </ChatSocketContext.Provider>
     </ChatroomContext.Provider>
 }

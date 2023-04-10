@@ -1,4 +1,5 @@
-require('@tensorflow/tfjs-node');
+// require('@tensorflow/tfjs-node');
+// untuk sekarang disable ini dulu sampai ketemu tfjs-node yang compat sama toxicity, entah kenapa jadi tidak bekerja
 const toxicity = require('@tensorflow-models/toxicity');
 
 /**

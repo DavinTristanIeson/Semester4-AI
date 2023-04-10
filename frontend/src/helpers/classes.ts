@@ -33,7 +33,7 @@ export class Message {
     get waktu(){
         return this.time.toLocaleString();
     }
-    static fromJSON(json:any){
+    static fromJSON(json:any): Message {
         return new Message(json.id, UserAccount.fromJSON(json.user), json.message, new Date(json.time));
     }
 }

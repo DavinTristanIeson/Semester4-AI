@@ -1,12 +1,22 @@
 const db = require("./db");
 
 function createOwnerObject(owner){
-  return {
-    id: owner.owner_id,
-    email: owner.owner_email,
-    name: owner.owner_name,
-    bio: owner.owner_bio,
-    pfp: owner.owner_pfp,
+  if (owner.owner_id){
+    return {
+      id: owner.owner_id,
+      email: owner.owner_email,
+      name: owner.owner_name,
+      bio: owner.owner_bio,
+      pfp: owner.owner_pfp,
+    }
+  } else {
+    return {
+      id: 0,
+      email: "-",
+      name: "Deleted User",
+      bio: "",
+      pfp: "",
+    }
   }
 }
 module.exports = {

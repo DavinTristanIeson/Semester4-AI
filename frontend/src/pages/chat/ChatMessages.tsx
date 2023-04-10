@@ -10,12 +10,13 @@ interface RequireMessage {
     message:Message
 }
 function ChatMessage({message}:RequireMessage){
-    const currentUser = useContext(CurrentUserContext);
     return <div className={`chat-message my-2 py-2 ps-3 ${(EphemeralMessage.isEphemeral(message) ? "bg-highlight-dark" : "bg-highlight")}`}>
         <div className="d-flex align-items-center justify-content-between me-3">
             <div className="d-flex align-items-center">
                 <MemberIcon user={message.user}/>
-                <h5 className="ms-2 m-0">{message.user.name}</h5>
+                <h5 className="ms-2 m-0">
+                    {message.user.id == 0 ? <i>{message.user.name}</i> : message.user.name}
+                </h5>
             </div>
             <p className="fw-light">{message.waktu}</p>
         </div>
@@ -196,7 +197,6 @@ function ChatMessages(){
     }
     useEffect(() => {
         if (!scrollRef.current || !justSentNewMessage.current) return;
-        console.log("hi");
         scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
         justSentNewMessage.current = false;
     }, [messages]);

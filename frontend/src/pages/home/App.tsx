@@ -113,7 +113,6 @@ function ProfileActions(){
     return <div className="position-relative ms-5">
         <MaybeImage className="icon-circle profile-action-icon" src={user?.user?.pfp ?? ''} alt={user?.user?.name ?? ''}
         onClick={() => setProfileActionsVariant(x => {
-            console.log(x);
             if (x == "hidden") return "visible";
             else return "hidden";
         })}/>

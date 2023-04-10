@@ -4,6 +4,7 @@ const { auth, createUserObject } = require("./middleware.js");
 const bcrypt = require("bcrypt");
 const db = require("./db.js");
 const fs = require("fs/promises");
+const path = require("path");
 
 const upload = require('./pfp.js');
 
@@ -97,7 +98,7 @@ router.get("/me", auth, (req, res) => {
   else res.status(401).end();
 });
 
-router.get("/", auth, async (req, res) => {
+router.get("/", auth, async (req, res, next) => {
   try {
     const user = await db.get("SELECT * FROM users WHERE id = ?", [req.session.user.id]);
     if (!user) res.status(404).end();
@@ -107,24 +108,32 @@ router.get("/", auth, async (req, res) => {
   }
 });
 
-router.delete("/", auth, async (req, res) => {
+async function deleteImage(fp){
+  const oldFilePath = path.join(__dirname, "../storage", fp);
+  if (
+    await fs
+      .access(oldFilePath)
+      .then(() => true)
+      .catch(() => false)
+    ){
+    await fs.unlink(oldFilePath);
+  }
+}
+
+router.delete("/", auth, async (req, res, next) => {
   try {
     const user = await db.get("SELECT * FROM users WHERE id = ?", [req.session.user.id]);
     if (!user){
       res.status(404).end();
       return;
     }
-    const oldFilePath = path.join(__dirname, "../storage", user.pfp_path);
-    if (
-      await fs
-        .access(oldFilePath)
-        .then(() => true)
-        .catch(() => false)
-      ){
-      await fs.unlink(oldFilePath);
-    }
+    const chatrooms = await db.all("SELECT * FROM rooms WHERE owner_id = ?", [req.session.user.id]);
+    await db.run("DELETE FROM users WHERE id = ?", [req.session.user.id]);
     req.session.destroy();
     res.status(200).end();
+
+    await deleteImage(user.pfp_path);
+    await Promise.allSettled(chatrooms.map(x => deleteImage(x.thumbnail)));
   } catch (err){
     next(err);
   }

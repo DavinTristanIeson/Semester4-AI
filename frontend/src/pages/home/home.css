@@ -42,8 +42,12 @@
 .chatroom-box-item {
     transition: box-shadow 0.3s, filter 0.3s;
 }
+.chatroom-box-item:not(.btn) {
+    width: 200px;
+}
 .chatroom-list-item img {
     width: 200px;
+    height: 150px;
 }
 .chatroom-list-item:hover {
     transform: translateX(0.5%);

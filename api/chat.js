@@ -17,7 +17,7 @@ const { loadModel } = require("./model");
 
 const CHATROOM_QUERY = `SELECT rooms.id AS room_id, rooms.*, users.id AS owner_id, users.email AS owner_email, users.name AS owner_name, users.bio AS owner_bio, users.pfp_path AS owner_pfp FROM rooms JOIN users ON rooms.owner_id = users.id`;
 const CHATROOM_MEMBERS_QUERY = `SELECT * FROM user_rooms JOIN users ON user_rooms.user_id = users.id WHERE room_id = ?`;
-const CHATROOM_MESSAGES_QUERY = `SELECT messages.*, users.id AS owner_id, users.email AS owner_email, users.name AS owner_name, users.bio AS owner_bio, users.pfp_path AS owner_pfp FROM messages JOIN users ON messages.user_id = users.id`;
+const CHATROOM_MESSAGES_QUERY = `SELECT messages.*, users.id AS owner_id, users.email AS owner_email, users.name AS owner_name, users.bio AS owner_bio, users.pfp_path AS owner_pfp FROM messages LEFT JOIN users ON messages.user_id = users.id`;
 
 router.get("/mine", auth, async (req, res, next) => {
   const MEMBER_HAS_JOINED =
