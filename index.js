@@ -24,6 +24,7 @@ fs.exists = function (fp) {
 })();
 
 const cors = require("cors");
+const path = require("path");
 const SQLiteStore = require("connect-sqlite3")(session);
 
 const PORT = 3000;
@@ -61,6 +62,10 @@ app.get("/storage/:filename", async (req, res) => {
   } else {
     res.status(404).end();
   }
+});
+app.use(express.static(path.join(__dirname, "./frontend/dist")));
+app.use((req, res)=>{
+  res.sendFile("./frontend/dist/index.html", {root: __dirname})
 });
 
 app.use((err, req, res, next) => {

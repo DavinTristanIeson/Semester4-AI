@@ -10,7 +10,7 @@ interface RequireMessage {
     message:Message
 }
 function ChatMessage({message}:RequireMessage){
-    return <div className={`chat-message my-2 py-2 ps-3 ${(EphemeralMessage.isEphemeral(message) ? "bg-highlight-dark" : "bg-highlight")}`}>
+    return <div className={`chat-message my-2 py-2 px-3 ${(EphemeralMessage.isEphemeral(message) ? "bg-highlight-dark" : "bg-highlight")}`}>
         <div className="d-flex align-items-center justify-content-between me-3">
             <div className="d-flex align-items-center">
                 <MemberIcon user={message.user}/>
@@ -39,6 +39,8 @@ function ChatInput({addMessage}:ChatInputProps){
     function detectEnter(e:React.KeyboardEvent<HTMLTextAreaElement>){
         if (e.key != "Enter") return;
         else if (e.shiftKey) return;
+
+        if (input.length == 0) return;
         addMessage(input);
         setInput("");
         e.preventDefault();

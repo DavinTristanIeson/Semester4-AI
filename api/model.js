@@ -1,5 +1,10 @@
-// require('@tensorflow/tfjs-node');
-// untuk sekarang disable ini dulu sampai ketemu tfjs-node yang compat sama toxicity, entah kenapa jadi tidak bekerja
+/* @tensorflow/tfjs-node error terus karena tidak compat sama yang digunakan oleh toxicity
+Versi yang di support @tensorflow-models/toxicity itu adalah @tensorflow/tfjs versi sekitar 1.3, mau coba tebak versi @tensorflow/tfjs sekarang?
+4.4.0
+Itu dah jauh kali, tentu saja ada banyak yang tidak compatible.
+
+Yang jadi keterlaluan itu aku ingat ini awalnya bekerja waktu aku pakai. Kok jadi tidak bisa?? */
+// require("@tensorflow/tfjs-node");
 const toxicity = require('@tensorflow-models/toxicity');
 
 /**
