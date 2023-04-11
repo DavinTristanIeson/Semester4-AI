@@ -28,7 +28,7 @@ const path = require("path");
 const SQLiteStore = require("connect-sqlite3")(session);
 
 const PORT = 3000;
-const WHITELISTED_URL = "http://localhost:5173";
+const WHITELISTED_URL = "http://localhost:3000";
 
 app.use(
   cors({
