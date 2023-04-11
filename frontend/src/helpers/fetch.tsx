@@ -36,7 +36,7 @@ export function ProtectedRoute({children}:ProtectedRouteProps){
     </>
 }
 
-export function useInformativeFetch(){
+export function useInformativeFetch<T>(){
     const pageState = useContext(PageStateContext);
     return function (asyncfn: ()=>Promise<Response>){
         return new Promise<Response>(async (resolve, reject)=>{

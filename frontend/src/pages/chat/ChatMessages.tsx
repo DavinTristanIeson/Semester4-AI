@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect, useRef, useState } from "react";
+import { RefObject, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { EphemeralMessage, Message, UserAccount } from "../../helpers/classes";
 import { MemberIcon } from "./ChatMembers";
 import { ChatSocketContext, ChatroomContext, CurrentUserContext, PageStateContext } from "../../context";
@@ -29,9 +29,12 @@ function ChatMessage({message}:RequireMessage){
 }
 
 interface ChatInputProps {
+    hasNewMessage: boolean,
+    letNewMessage(value:boolean): void,
     addMessage(msg:string):void;
+    scrollRef: RefObject<HTMLDivElement>,
 }
-function ChatInput({addMessage}:ChatInputProps){
+function ChatInput({addMessage, hasNewMessage, letNewMessage, scrollRef}:ChatInputProps){
     const [input, setInput] = useState("");
     function onChange(e:React.ChangeEvent<HTMLTextAreaElement>){
         setInput(e.target.value);
@@ -40,14 +43,37 @@ function ChatInput({addMessage}:ChatInputProps){
         if (e.key != "Enter") return;
         else if (e.shiftKey) return;
 
-        if (input.length == 0) return;
-        addMessage(input);
+        const msg = input.trim();
+        if (msg.length == 0) return;
+        addMessage(msg);
         setInput("");
         e.preventDefault();
         // TODO: send message
     }
-    return <textarea className="chat-input" placeholder="Your Message" value={input} onChange={onChange} onKeyDown={detectEnter}>
-    </textarea>
+    return <div className="chat-input">
+        {
+            hasNewMessage && 
+            <div className="alert alert-highlight alert-dismissible">
+                <strong>There's a new message! </strong>
+                <a onClick={(e)=>{
+                    e.preventDefault();
+                    letNewMessage(false);
+                    if (!scrollRef.current) return;
+                    scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+                }} href='#' className="link-dark">Click to instantly go to the bottom.</a>
+                <button type="button" className="btn-close"
+                onClick={(e)=>{
+                    e.stopPropagation();
+                    letNewMessage(false);
+                }}
+                data-bs-dismiss="alert"
+                aria-label="Close">
+                </button>
+            </div>
+        }
+        <textarea placeholder="Your Message" value={input} onChange={onChange} onKeyDown={detectEnter}>
+        </textarea>
+    </div>
 }
 
 function useInfiniteScrolling(){
@@ -198,47 +224,38 @@ function ChatMessages(){
         }
     }
     useEffect(() => {
+        socket?.on("sendMessage", (msg) => {
+            console.log(msg);
+            if (msg.user.id == user?.user?.id) return;
+            setMessages(msgs => [...msgs, Message.fromJSON(msg)]);
+            letNewMessage(true);
+        });
+        return () => {socket?.off("sendMessage")};
+    }, [])
+    useEffect(() => {
         if (!scrollRef.current || !justSentNewMessage.current) return;
         scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
         justSentNewMessage.current = false;
     }, [messages]);
 
-    socket?.on("sendMessage", (msg) => {
-        setMessages(msgs => [...msgs, Message.fromJSON(msg)]);
-        letNewMessage(true);
-    });
+    
 
     return <div className="col-9 chat-messages-list bg-white me-2 p-3 position-relative">
         <h2 className="text-center">{chatroom?.room?.settings.title}</h2>
         {
             messages.length > 0 &&
-            <div className="overflow-y-scroll h-screen mb-2" ref={scrollContainer}>
+            <div className="overflow-y-scroll h-screen mb-2 position-relative" ref={scrollContainer}>
                 <hr ref={top}/>
                 { messages.map(msg => <ChatMessage message={msg} key={msg.id}/>)}
                 <hr ref={bottom}/>
             </div>
         }
-        {
-            hasNewMessage && 
-            <div className="alert alert-highlight alert-dismissible">
-                <strong>There's a new message! </strong>
-                <a onClick={(e)=>{
-                    e.preventDefault();
-                    letNewMessage(false);
-                    if (!scrollRef.current) return;
-                    scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-                }} href='#' className="link-dark">Click to instantly go to the bottom.</a>
-                <button type="button" className="btn-close"
-                onClick={(e)=>{
-                    e.stopPropagation();
-                    letNewMessage(false);
-                }}
-                data-bs-dismiss="alert"
-                aria-label="Close">
-                </button>
-            </div>
-        }
-        <ChatInput addMessage={addItem}/>
+        <ChatInput
+            addMessage={addItem}
+            letNewMessage={letNewMessage}
+            hasNewMessage={hasNewMessage}
+            scrollRef={scrollRef}
+        />
     </div>
 }
 export default ChatMessages;

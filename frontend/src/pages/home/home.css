@@ -43,7 +43,8 @@
     transition: box-shadow 0.3s, filter 0.3s;
 }
 .chatroom-box-item:not(.btn) {
-    width: 200px;
+    max-width: 400px;
+    max-height: 300px;
 }
 .chatroom-list-item img {
     width: 200px;

@@ -8,7 +8,7 @@ import { PrimaryButton } from "../../components/Buttons";
 import { useNavigate } from "react-router-dom";
 
 import Add from "../../assets/add.svg";
-import { API } from "../../helpers/constants";
+import { API, CONNECTION_ERROR, SERVER_ERROR } from "../../helpers/constants";
 import { Loading } from "../../components/Informative";
 import { useInformativeFetch } from "../../helpers/fetch";
 import { ChatroomJoinDetail, CreateNewChatroom } from "./ChatroomDetail";
@@ -16,21 +16,41 @@ import { AnimatePresence, motion } from "framer-motion";
 
 
 function SearchView({searchTerm}:{searchTerm:string}){
-    const [viewedChatroom, setViewedChatroom] = useState<ChatroomInfo|null>(null);
-    const infoFetch = useInformativeFetch();
+    const [viewedChatroom, setViewedChatroom] = useState<{
+        info: ChatroomInfo,
+        hasJoined: boolean
+    }|null>(null);
+    const pageState = useContext(PageStateContext);
 
-    const [chatrooms, setChatrooms] = useState<ChatroomInfo[]>([]);
+    const [myChatrooms, setMyChatrooms] = useState<ChatroomInfo[]>([]);
+    const [publicChatrooms, setPublicChatrooms] = useState<ChatroomInfo[]>([]);
     async function updateSearch(){
         const params = new URLSearchParams();
         params.append("search", searchTerm);
+        pageState?.letLoading(true);
         try {
-            const res = await infoFetch(() => fetch(API + "/chatroom/public?" + params.toString(), {
-                credentials: "include"
-            }));
-            if (res.ok){
-                setChatrooms(ChatroomInfo.fromJSONArray(await res.json()));
+            const res = await Promise.allSettled([
+                fetch(API + "/chatroom/mine?" + params.toString(), {
+                    credentials: "include"
+                }),
+                fetch(API + "/chatroom/public?" + params.toString(), {
+                    credentials: "include"
+                })
+            ]);
+            pageState?.letLoading(false);
+            if (res[0].status == "fulfilled") {
+                setMyChatrooms(ChatroomInfo.fromJSONArray(await res[0].value.json()));
             }
-        } catch (e){}
+            if (res[1].status == "fulfilled") {
+                setPublicChatrooms(ChatroomInfo.fromJSONArray(await res[1].value.json()));
+            }
+            if (res[0].status != "fulfilled" || res[1].status != "fulfilled"){
+                pageState?.setErrMsg(SERVER_ERROR, 3000);
+            }
+        } catch (e){
+            pageState?.letLoading(false);
+            pageState?.setErrMsg(CONNECTION_ERROR, 3000);
+        }
     }
     useEffect(()=>{
         updateSearch();
@@ -41,11 +61,12 @@ function SearchView({searchTerm}:{searchTerm:string}){
             {viewedChatroom && 
             // Animate opacity saja, kalau animate transform nanti bentrok dengan transform punya modal
             <motion.div initial={{opacity: 0}} animate={{opacity: 1}} exit={{opacity:0}}>
-                <ChatroomJoinDetail hasJoined={false} onClose={() => setViewedChatroom(null)} chatroom={viewedChatroom}/>
+                <ChatroomJoinDetail hasJoined={false} onClose={() => setViewedChatroom(null)} chatroom={viewedChatroom.info}/>
             </motion.div>}
         </AnimatePresence>
         <div className="vertical-scroll">
-            {chatrooms.map(x => <ChatroomListItem chatroom={x} onOpen={setViewedChatroom}/>)}
+            {myChatrooms.map(x => <ChatroomListItem chatroom={x} onOpen={() => setViewedChatroom({info: x, hasJoined: true})} key={x.id}/>)}
+            {publicChatrooms.map(x => <ChatroomListItem chatroom={x} onOpen={() => setViewedChatroom({info: x, hasJoined: false})} key={x.id}/>)}
         </div>
     </>
 }

@@ -23,10 +23,20 @@ router.get("/mine", auth, async (req, res, next) => {
   const MEMBER_HAS_JOINED =
     " WHERE (SELECT COUNT(*) FROM user_rooms WHERE user_rooms.user_id = ? AND user_rooms.room_id = rooms.id ) > 0";
   try {
-    const rooms = await db.all(CHATROOM_QUERY + MEMBER_HAS_JOINED, [
-      parseInt(req.session.user.id),
-    ]);
-    res.status(200).json(rooms.map((x) => createChatroomInfoObject(x)));
+    let myRooms;
+    if (req.query.search) {
+      myRooms = await db.all(
+        CHATROOM_QUERY +
+        MEMBER_HAS_JOINED +
+        " AND rooms.title LIKE ?",
+        [req.session.user.id, `${req.query.search}%`]
+      );
+    } else {
+      myRooms = await db.all(CHATROOM_QUERY + MEMBER_HAS_JOINED, [
+        req.session.user.id,
+      ]);
+    }
+    res.status(200).json(myRooms.map((x) => createChatroomInfoObject(x)));
   } catch (err) {
     next(err);
   }
@@ -266,7 +276,7 @@ router.post("/:id/messages", auth, hasUserJoined, async (req, res) => {
     const msg = createMessageObject(msgRaw);
 
     // Mengirimkan event 'sendMessage' ke semua anggota chatroom menggunakan socket.io
-    dispatch(io => io.to(id).emit("sendMessage", msg));
+    dispatch(io => io.to(parseInt(id)).emit("sendMessage", msg));
     res.status(200).json(msg);
   } catch (err) {
     console.error(err);
