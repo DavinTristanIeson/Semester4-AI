@@ -27,6 +27,7 @@ async function main(db) {
     thumbnail TEXT NOT NULL,
     is_filtered INT DEFAULT 0,
     is_public INT DEFAULT 0,
+    invite_link TEXT NOT NULL,
     FOREIGN KEY (owner_id) REFERENCES users (id) ON UPDATE CASCADE ON DELETE CASCADE
   )`);
   await db.run(`CREATE TABLE IF NOT EXISTS messages (

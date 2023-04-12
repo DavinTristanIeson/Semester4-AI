@@ -36,6 +36,9 @@ module.exports = {
     if (doesExist) next();
     else res.status(404).end();
   },
+  generateInviteLink(){
+    return Math.random().toString(36).substring(2);
+  },
   async isChatroomOwner(req, res, next){
     const { owner_id } = await db.get("SELECT rooms.owner_id FROM user_rooms JOIN rooms ON rooms.id = user_rooms.room_id WHERE user_id = ? AND room_id = ?", [req.session.user.id, req.params.id]);
     if (owner_id == req.session.user.id) next();
@@ -65,6 +68,7 @@ module.exports = {
         id: chatroom.room_id,
         owner,
         members: users,
+        invite: chatroom.invite_link,
         settings: {
           title: chatroom.title,
           thumbnail: chatroom.thumbnail,

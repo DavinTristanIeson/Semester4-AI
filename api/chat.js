@@ -9,6 +9,7 @@ const {
   isChatroomOwner,
   createChatroomInfoObject,
   createMessageObject,
+  generateInviteLink,
 } = require("./middleware");
 const upload = require("./pfp");
 const fs = require("fs/promises");
@@ -215,7 +216,7 @@ router.post("/", upload.single("thumbnail"), auth, async (req, res, next) => {
     const { title, description, isFiltered, isPublic } = req.body;
     const thumbnail = req.file;
     const { lastID } = await db.run(
-      "INSERT INTO rooms VALUES (NULL, ?, ?, ?, ?, ?, ?)",
+      "INSERT INTO rooms VALUES (NULL, ?, ?, ?, ?, ?, ?, ?)",
       [
         req.session.user.id,
         title,
@@ -223,6 +224,7 @@ router.post("/", upload.single("thumbnail"), auth, async (req, res, next) => {
         thumbnail.filename,
         isFiltered.length > 0 ? 1 : 0,
         isPublic.length > 0 ? 1 : 0,
+        generateInviteLink(),
       ]
     );
     await db.run("INSERT INTO user_rooms VALUES (?, ?)", [
@@ -237,6 +239,41 @@ router.post("/", upload.single("thumbnail"), auth, async (req, res, next) => {
     }
   } catch (err) {
     next(err);
+  }
+});
+
+
+router.post("/invite/:link", auth, async (req, res, next) => {
+  try {
+    const room = await db.get("SELECT * FROM rooms WHERE invite_link = ?", [req.params.link]);
+    if (!room){
+      res.status(404).json({message: "Room not found"});
+      return;
+    }
+
+    const isMember = await db.get("SELECT * FROM user_rooms WHERE user_id = ? AND room_id = ?", [req.session.user.id, room.id]);
+    
+    if (!isMember){
+      await db.run("INSERT INTO user_rooms VALUES (?, ?)", [
+        req.session.user.id,
+        room.id,
+      ]);
+    }
+    res.status(200).json({id: room.id});
+  } catch (e){
+    next(e);
+  }
+});
+router.put("/invite/:id", auth, isChatroomOwner, async (req, res, next)=>{
+  try {
+    const link = generateInviteLink();
+    await db.run("UPDATE rooms SET invite_link = ? WHERE id = ?", [
+      link,
+      req.params.id
+    ]);
+    res.status(200).json({link});
+  } catch (e){
+    next(e);
   }
 });
 

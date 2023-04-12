@@ -1,4 +1,4 @@
-import { useContext, useRef } from "react";
+import { useContext, useRef, useState } from "react";
 import { DangerButton, PrimaryButton } from "../../components/Buttons";
 import { MaybeImage } from "../../components/Image";
 import { ArbitraryInput, exportResponses } from "../../components/Inputs";
@@ -8,7 +8,6 @@ import { ChatroomContext } from "../../context";
 import { useNavigate } from "react-router-dom";
 import { useInformativeFetch } from "../../helpers/fetch";
 import { API } from "../../helpers/constants";
-import { Chatroom } from "../../helpers/classes";
 
 interface ChatOptionsProps {
     onClose: ()=>void
@@ -17,6 +16,7 @@ interface ChatOptionsProps {
 function ChatOptions({onClose}:ChatOptionsProps){
     const chatroom = useContext(ChatroomContext)!;
     const navigate = useNavigate();
+    const [hasCopied, letCopied] = useState(false);
 
     const chatroomOptions = [];
     if (chatroom?.room?.settings.isToxicityFiltered)
@@ -60,18 +60,13 @@ function ChatOptions({onClose}:ChatOptionsProps){
             if (!res.ok) return;
             chatroom.setRoom(room => {
                 if (!room) return room;
-                return new Chatroom(
-                    room.id,
-                    room.owner,
-                    room.members,
-                    {
-                        title: responses["Chatroom Title"] || room.settings.title,
-                        description: responses["Chatroom Description"] || room.settings.description,
-                        thumbnail: responses["Chatroom Thumbnail"] || room.settings.thumbnail,
-                        isToxicityFiltered: responses["Settings"] ? responses["Settings"].includes("filtered") : room.settings.isToxicityFiltered,
-                        isPublic: responses["Settings"] ? responses["Settings"].includes("public") : room.settings.isPublic,
-                    }
-                );
+                return room.withSettings({
+                    title: responses["Chatroom Title"],
+                    description: responses["Chatroom Description"],
+                    thumbnail: responses["Chatroom Thumbnail"],
+                    isToxicityFiltered: responses["Settings"]?.includes("filtered"),
+                    isPublic: responses["Settings"]?.includes("public")
+                });
             })
             onClose();
         } catch (e){}
@@ -89,12 +84,21 @@ function ChatOptions({onClose}:ChatOptionsProps){
             }
         } catch (e){};
     }
+    function copyToClipboard(){
+        navigator.clipboard.writeText(`${window.location.origin}/invite/${chatroom?.room!.invite}`);
+        letCopied(true);
+    }
 
     return <div className="very-rounded chat-options thick-shadow bg-white">
         <div className="p-4">
             <MaybeImage src={chatroom?.room!.settings.thumbnail} alt={chatroom?.room!.settings.title} className="w-100"/>
             <div>
                 {inputs.current.map(x => <ArbitraryInput input={x} shouldValidate={true} key={x.id}/>)}
+                <div className="mx-2">
+                    <b>Invite Link: </b>
+                    <div className="rounded px-4 py-2 bg-highlight" role="button" onClick={copyToClipboard}>{window.location.origin}/invite/{chatroom?.room!.invite}</div>
+                    {hasCopied && <p className="text-success">Copied to clipboard!</p>}
+                </div>
             </div>
         </div>
         <div className="p-1 d-flex flex-row-reverse">

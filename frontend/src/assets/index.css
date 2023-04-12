@@ -194,3 +194,7 @@ input:not([type=submit], [type=checkbox], [type=radio], [type=file]):focus, text
 .icon-circle {
   background-image: linear-gradient(var(--primary), var(--secondary));
 }
+
+.text-highlight {
+  color: var(--highlight);
+}

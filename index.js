@@ -78,8 +78,6 @@ app.use((err, req, res, next) => {
   }
 });
 
-app.get("/", (req, res) => {});
-
 const server = app.listen(PORT, () => {
   console.log(`INFO: Server running at http://localhost:${PORT}`);
 });

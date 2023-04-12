@@ -81,17 +81,35 @@ export class Chatroom {
     readonly owner:UserAccount;
     members:UserAccount[];
     settings:ChatroomSettings;
-    constructor(id:number, owner:UserAccount, members:UserAccount[], settings:ChatroomSettings){
+    invite:string;
+    constructor(id:number, owner:UserAccount, members:UserAccount[], invite:string, settings:ChatroomSettings){
         this.id = id;
         this.owner = owner;
         this.members = members;
         this.settings = settings;
+        this.invite = invite;
+    }
+    withSettings(settings:Partial<ChatroomSettings>){
+        return new Chatroom(
+            this.id,
+            this.owner,
+            this.members,
+            this.invite,
+            {
+                title: settings.title || this.settings.title,
+                description: settings.description || this.settings.description,
+                thumbnail: settings.thumbnail || this.settings.thumbnail,
+                isToxicityFiltered: settings.isToxicityFiltered ?? this.settings.isToxicityFiltered,
+                isPublic: settings.isPublic ?? this.settings.isPublic,
+            }
+        );
     }
     static fromJSON(json:any){
         return new Chatroom(
             json.id,
             UserAccount.fromJSON(json.owner),
             json.members.map((x:any) => UserAccount.fromJSON(x)),
+            json.invite,
             {
                 ...json.settings,
                 thumbnail: STORAGE + json.settings.thumbnail,
