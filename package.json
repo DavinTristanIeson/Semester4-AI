@@ -14,7 +14,8 @@
 		"@tensorflow-models/toxicity": "^1.2.2"
 	},
 	"scripts": {
-		"dev": "node index",
+		"dev": "node index --dev",
+		"start": "node index",
 		"reset": "python reset.py"
 	},
 	"keywords": [],

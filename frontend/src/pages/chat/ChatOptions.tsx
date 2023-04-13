@@ -8,6 +8,7 @@ import { ChatroomContext } from "../../context";
 import { useNavigate } from "react-router-dom";
 import { useInformativeFetch } from "../../helpers/fetch";
 import { API } from "../../helpers/constants";
+import Dice from "../../assets/dice.svg";
 
 interface ChatOptionsProps {
     onClose: ()=>void
@@ -84,9 +85,25 @@ function ChatOptions({onClose}:ChatOptionsProps){
             }
         } catch (e){};
     }
-    function copyToClipboard(){
-        navigator.clipboard.writeText(`${window.location.origin}/invite/${chatroom?.room!.invite}`);
+    function copyToClipboard(invite:string){
+        navigator.clipboard.writeText(`${window.location.origin}/invite/${invite}`);
         letCopied(true);
+    }
+    async function rerollLink(ev:React.MouseEvent<HTMLImageElement>){
+        ev.preventDefault();
+        try {
+            const res = await infoFetch(() => fetch(API + "/chatroom/invite/" + chatroom!.room!.id, {
+                credentials: "include",
+                method: "PUT",
+            }));
+            if (res.ok){
+                const link:string = (await res.json()).link;
+                chatroom!.setRoom(room => room!.withInvite(link));
+                copyToClipboard(link);
+            }
+        } catch (err){}
+
+        // http://localhost:5173/invite/0kveur6e1bi
     }
 
     return <div className="very-rounded chat-options thick-shadow bg-white">
@@ -96,7 +113,10 @@ function ChatOptions({onClose}:ChatOptionsProps){
                 {inputs.current.map(x => <ArbitraryInput input={x} shouldValidate={true} key={x.id}/>)}
                 <div className="mx-2">
                     <b>Invite Link: </b>
-                    <div className="rounded px-4 py-2 bg-highlight" role="button" onClick={copyToClipboard}>{window.location.origin}/invite/{chatroom?.room!.invite}</div>
+                    <div className="rounded px-4 py-2 bg-highlight d-flex justify-content-between align-items-center" role="button" onClick={() => copyToClipboard(chatroom?.room!.invite)}>
+                        {window.location.origin}/invite/{chatroom?.room!.invite}
+                        <img src={Dice} alt="Change Invite Link" className="reroll-icon" role="button" onClick={rerollLink}/>
+                    </div>
                     {hasCopied && <p className="text-success">Copied to clipboard!</p>}
                 </div>
             </div>

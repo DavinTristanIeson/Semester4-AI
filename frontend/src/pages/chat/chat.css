@@ -74,3 +74,15 @@
     padding-left: 40px;
     min-height: 40px;
 }
+
+.reroll-icon {
+    width: 40px;
+    height: 40px;
+    padding: 4px;
+    border-radius: 50%;
+    transition: background-color 0.2s, transform 0.3s;
+}
+.reroll-icon:hover {
+    background-color: var(--primary);
+    transform: rotate(180deg);
+}

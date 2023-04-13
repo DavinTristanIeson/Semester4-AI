@@ -89,6 +89,15 @@ export class Chatroom {
         this.settings = settings;
         this.invite = invite;
     }
+    withInvite(link:string){
+        return new Chatroom(
+            this.id,
+            this.owner,
+            this.members,
+            link,
+            this.settings
+        );
+    }
     withSettings(settings:Partial<ChatroomSettings>){
         return new Chatroom(
             this.id,
