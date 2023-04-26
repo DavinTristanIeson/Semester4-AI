@@ -11,7 +11,7 @@ import { UserAccount } from "../../helpers/classes";
 function LoginForm(){
     const inputs = useRef([
         new TextInputObject("Email", "", isNotEmpty("Email is required")),
-        new TextInputObject("Password", "", isNotEmpty("Password is required")),
+        new TextInputObject("Password", "", isNotEmpty("Password is required"), {semanticType: "password"}),
     ]);
     const [isValidating, letValidate] = useState(false);
     const navigate = useNavigate();
